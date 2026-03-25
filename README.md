@@ -1,6 +1,6 @@
 # WoterClip
 
-Linear-backed agent orchestration for Claude Code. A single Claude instance wears different "hats" (personas) based on Linear issue labels — a CEO triages work, worker personas execute it.
+Linear-backed agent orchestration for Claude Code. A single Claude instance wears different "hats" (personas) based on Linear issue labels – a CEO triages work, worker personas execute it.
 
 ## How It Works
 
@@ -14,18 +14,18 @@ Linear Issues → /heartbeat → Persona Matching → Work → Report Back
 4. **Reports** are structured comments on the Linear issue with progress, commits, and blockers
 5. **Schedule** runs heartbeats automatically via Claude Code's `/schedule`
 
-The human is the **Board** — the ultimate escalation target when the agent is blocked.
+The human is the **Board** – the ultimate escalation target when the agent is blocked.
 
 ## Install
 
 ```bash
-claude plugin add /path/to/woterclip
+claude plugin add github:wotai-dev/woterclip
 ```
 
 ### Prerequisites
 
 - [Claude Code](https://claude.ai/code) installed
-- [Linear MCP](https://linear.app/docs/mcp) connected — add to your `.mcp.json` or global MCP config:
+- [Linear MCP](https://linear.app/docs/mcp) connected – add to your `.mcp.json` or global MCP config:
   ```json
   {
     "mcpServers": {
@@ -59,17 +59,17 @@ claude plugin add /path/to/woterclip
 
 Each `/heartbeat` runs an 11-step cycle:
 
-1. **Load config** — read `.claude/woterclip/config.yaml`, check lockfile
-2. **Check inbox** — query Linear for assigned issues, filter and sort
-3. **Pick issue** — highest priority In Progress, then Todo
-4. **Resolve persona** — match issue label → persona directory, load SOUL.md + TOOLS.md
-5. **Validate tools** — check required MCP tools are available
-6. **Lock issue** — add `agent-working` label
-7. **Understand context** — read issue, comments, parent, heartbeat counter
-8. **Do work** — follow persona instructions (CEO triages, workers implement)
-9. **Report** — post structured comment with progress, commits, sub-issues
-10. **Update state** — manage labels based on outcome (done/blocked/continuing)
-11. **Next or exit** — pick another issue or clean up and stop
+1. **Load config** – read `.claude/woterclip/config.yaml`, check lockfile
+2. **Check inbox** – query Linear for assigned issues, filter and sort
+3. **Pick issue** – highest priority In Progress, then Todo
+4. **Resolve persona** – match issue label → persona directory, load SOUL.md + TOOLS.md
+5. **Validate tools** – check required MCP tools are available
+6. **Lock issue** – add `agent-working` label
+7. **Understand context** – read issue, comments, parent, heartbeat counter
+8. **Do work** – follow persona instructions (CEO triages, workers implement)
+9. **Report** – post structured comment with progress, commits, sub-issues
+10. **Update state** – manage labels based on outcome (done/blocked/continuing)
+11. **Next or exit** – pick another issue or clean up and stop
 
 Use `--dry-run` to see what would be picked without doing work. Use `--persona backend` to force a specific persona.
 
@@ -87,7 +87,7 @@ Each persona gets its own directory with three files:
 
 | Persona | Role | Model | Turns | Label |
 |---------|------|-------|-------|-------|
-| CEO | Triage, decompose, coordinate | Sonnet | 100 | *(default — no label)* |
+| CEO | Triage, decompose, coordinate | Sonnet | 100 | *(default – no label)* |
 | Backend | API, database, server-side | Opus | 300 | `backend` |
 | Frontend | UI, components, styling | Sonnet | 200 | `frontend` |
 
@@ -153,6 +153,10 @@ All labels live under a "WoterClip" parent group in Linear, created by `/wotercl
 ## Migrating from Paperclip
 
 Use `/persona-import` to convert Paperclip agent directories into WoterClip personas. It maps SOUL.md, TOOLS.md, HEARTBEAT.md role-specific sections, and AGENTS.md safety rules into the WoterClip format. Budget tracking, PARA memory, and approval workflows are not imported (replaced by Claude Code built-in features or intentionally omitted from v1).
+
+## Background
+
+WoterClip is inspired by [Paperclip](https://github.com/paperclipai/paperclip), an agent orchestration platform that uses a central API for task management, agent checkout, and chain-of-command routing. WoterClip takes the same core ideas – persona-based identity, structured heartbeats, hierarchical escalation – and rebuilds them as a Claude Code plugin backed by Linear instead of a custom API. The result is simpler (no server, no database, no separate processes) while keeping the parts that worked well: SOUL.md for agent identity, structured comments for audit trails, and a CEO/worker hierarchy for task decomposition.
 
 ## Design
 
