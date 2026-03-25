@@ -19,7 +19,17 @@ The human is the **Board** – the ultimate escalation target when the agent is 
 ## Install
 
 ```bash
-claude plugin add github:wotai-dev/woterclip
+# Clone and use as a local plugin
+git clone https://github.com/wotai-dev/woterclip.git
+claude --plugin-dir /path/to/woterclip
+```
+
+For persistent install, add to your Claude Code settings:
+
+```json
+{
+  "pluginDirs": ["/path/to/woterclip"]
+}
 ```
 
 ### Prerequisites
