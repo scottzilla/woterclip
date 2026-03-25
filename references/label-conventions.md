@@ -30,19 +30,20 @@ Persona labels route issues to the right persona. Created by `/woterclip-init`.
 | `frontend` | Frontend Engineer | Component, UI, page, layout, styling, responsive, animation |
 | `infra` | Infra Engineer | Deploy, CI/CD, Docker, env vars, infrastructure |
 | `qa` | QA Engineer | Test, coverage, E2E, integration test, flaky |
-| *(none)* | CEO (default) | No code signals, architecture, cross-cutting, unlabeled |
+| `ceo` | CEO | Strategy, prioritization, roadmap, architecture, cross-cutting |
+| *(none)* | Orchestrator (default) | Unlabeled issues – routed by the Orchestrator |
 
 ### Persona Label Rules
 
 - **One persona label per issue.** Never dual-label — decompose into sub-issues instead.
-- Labels are applied by the CEO persona during triage, or manually by the Board.
+- Labels are applied by the Orchestrator during triage, or manually by the Board.
 - Custom persona labels are added via `/persona-create` and registered in `config.yaml`.
 
 ## Label Lifecycle
 
 ```
 New issue (no labels)
-  → CEO triages → adds persona label (e.g., "backend")
+  → Orchestrator triages → adds persona label (e.g., "backend")
   → Heartbeat picks up → adds "agent-working"
   → Work completes → removes "agent-working"
   → Or blocked → removes "agent-working", adds "agent-blocked"

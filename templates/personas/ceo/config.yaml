@@ -1,15 +1,14 @@
 name: CEO
-role: orchestrator
-label: null
-is_default: true
+role: strategist
+label: ceo
 escalates_to: board
 
 required_tools:
-  - mcp__claude_ai_Linear          # Prefix match — covers all Linear MCP tools
+  - mcp__claude_ai_Linear          # Prefix match – covers all Linear MCP tools
 
 runtime:
-  model: sonnet                    # Triage is lightweight — no need for Opus
-  thinking_effort: medium
+  model: sonnet                    # Strategic thinking needs good reasoning, not max
+  thinking_effort: high
   max_turns: 100
   enable_chrome: false
   timeout: 0

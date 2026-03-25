@@ -29,14 +29,14 @@ Execute the WoterClip heartbeat cycle: pick up assigned Linear issues, resolve t
 
 Check quiet hours: if `quiet_hours.enabled` and current time is within the quiet window:
 - `behavior: "skip"` → delete lockfile and exit with message: "Quiet hours active. Skipping."
-- `behavior: "triage-only"` → proceed but only load CEO persona (skip worker personas in step 3).
+- `behavior: "triage-only"` → proceed but only load Orchestrator persona (skip worker personas in step 3).
 
 ## Step 2: Check Inbox
 
 1. Call `mcp__claude_ai_Linear__list_issues` with filter for assigned issues (`assignee: "me"`).
 2. Filter client-side:
    - **Keep** only issues with status "In Progress" or "Todo"
-   - **Skip** issues without a persona label (unless CEO is default and issue has no label)
+   - **Skip** issues without a persona label (unless Orchestrator is default and issue has no label)
    - **Skip** `agent-blocked` issues unless new human comments exist since the last agent comment (check via `mcp__claude_ai_Linear__list_comments`)
 3. Sort:
    - Primary: status — In Progress before Todo
@@ -59,7 +59,7 @@ Check quiet hours: if `quiet_hours.enabled` and current time is within the quiet
 ## Step 4: Resolve Persona
 
 1. Read the issue's labels. Find the persona label by matching against the `personas` map in config.
-2. No persona label found → load the persona with `is_default: true` (typically CEO).
+2. No persona label found → load the persona with `is_default: true` (typically Orchestrator).
 3. Load persona files from `.claude/woterclip/<persona.path>/`:
    - `SOUL.md` → inject into context as identity instructions
    - `TOOLS.md` → inject into context as tool guidance
@@ -98,7 +98,9 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 
 Follow the persona's SOUL.md instructions. This step varies by persona:
 
-**CEO persona:** Triage the issue — apply persona labels, create sub-issues, or escalate. Never write code.
+**Orchestrator persona:** Triage the issue – apply persona labels, create sub-issues, or escalate. Never write code.
+
+**CEO persona:** Make strategic decisions – prioritization, scope, architecture, coordination. Never write code.
 
 **Worker personas (backend, frontend, etc.):**
 - Use repo tools (Read, Write, Edit, Bash, Grep, Glob) to implement changes

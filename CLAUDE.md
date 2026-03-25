@@ -35,6 +35,13 @@ Each persona = directory with 3 files:
 
 Routing: Linear issue label → `personas` map in config.yaml → persona directory.
 
+### Persona hierarchy
+
+- **Board** (human) – ultimate escalation target
+- **CEO** persona – strategic decisions, prioritization, architecture (label: `ceo`)
+- **Orchestrator** persona – mechanical triage/routing, default for unlabeled issues (label: none, `is_default: true`)
+- **Worker personas** (Backend, Frontend, etc.) – implementation, escalate to CEO
+
 ### Key conventions
 
 - **Labels are the state machine.** `agent-working` and `agent-blocked` are mutually exclusive. Labels are managed via read-modify-write (get labels array → modify → save full set).

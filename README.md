@@ -1,6 +1,6 @@
 # WoterClip
 
-Linear-backed agent orchestration for Claude Code. A single Claude instance wears different "hats" (personas) based on Linear issue labels – a CEO triages work, worker personas execute it.
+Linear-backed agent orchestration for Claude Code. A single Claude instance wears different "hats" (personas) based on Linear issue labels – an Orchestrator routes work, a CEO makes strategic calls, and worker personas execute.
 
 ## How It Works
 
@@ -92,7 +92,8 @@ Each persona gets its own directory with three files:
 
 | Persona | Role | Model | Turns | Label |
 |---------|------|-------|-------|-------|
-| CEO | Triage, decompose, coordinate | Sonnet | 100 | *(default – no label)* |
+| Orchestrator | Route issues, decompose work | Haiku | 50 | *(default – no label)* |
+| CEO | Strategy, prioritization, architecture | Sonnet | 100 | `ceo` |
 | Backend | API, database, server-side | Opus | 300 | `backend` |
 | Frontend | UI, components, styling | Sonnet | 200 | `frontend` |
 
@@ -107,6 +108,10 @@ After `/woterclip-init`, your repo gets:
 ├── config.yaml              # Linear settings, heartbeat behavior, persona routing
 ├── heartbeat-log.jsonl      # Append-only heartbeat history (created at runtime)
 └── personas/
+    ├── orchestrator/
+    │   ├── SOUL.md
+    │   ├── TOOLS.md
+    │   └── config.yaml
     ├── ceo/
     │   ├── SOUL.md
     │   ├── TOOLS.md

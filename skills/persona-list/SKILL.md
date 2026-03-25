@@ -28,14 +28,16 @@ For each persona in the `personas` config map:
 WoterClip Personas
 ──────────────────
 Name              Label       Model    Turns  Escalates  Tools
-CEO               (default)   sonnet   100    board      Linear
+Orchestrator      (default)   haiku    50     ceo        Linear
+CEO               ceo         sonnet   100    board      Linear
 Backend Engineer  backend     opus     300    ceo        Linear
 Frontend Engineer frontend    sonnet   200    ceo        Linear
 
 Files:
-  CEO:      .claude/woterclip/personas/ceo/      ✓ SOUL ✓ TOOLS ✓ config
-  Backend:  .claude/woterclip/personas/backend/   ✓ SOUL ✓ TOOLS ✓ config
-  Frontend: .claude/woterclip/personas/frontend/  ✓ SOUL ✓ TOOLS ✓ config
+  Orchestrator: .claude/woterclip/personas/orchestrator/ ✓ SOUL ✓ TOOLS ✓ config
+  CEO:          .claude/woterclip/personas/ceo/         ✓ SOUL ✓ TOOLS ✓ config
+  Backend:      .claude/woterclip/personas/backend/     ✓ SOUL ✓ TOOLS ✓ config
+  Frontend:     .claude/woterclip/personas/frontend/    ✓ SOUL ✓ TOOLS ✓ config
 ```
 
 Flag missing files with `✗` so the user knows what needs attention.

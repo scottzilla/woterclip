@@ -1,25 +1,36 @@
-# Tools — CEO Persona
+# Tools – CEO Persona
 
 ## Required
 
-- **Linear MCP** (`mcp__claude_ai_Linear__*`): Issue queries, label management, sub-issue creation, comments.
+- **Linear MCP** (`mcp__claude_ai_Linear__*`): Issue management, comments, sub-issue creation, label and status updates.
 
 ## Usage Patterns
 
-### Triage an issue
-1. `list_issues` — fetch assigned issues (inbox scan)
-2. `get_issue` — read issue details, labels, parent
-3. `save_issue` — apply persona label, update status
-4. `save_comment` — post triage decision
+### Make a scope decision
 
-### Decompose into sub-issues
-1. `save_issue` with `parentId` — create child issues with persona labels
-2. `save_comment` on parent — summarize decomposition
+1. `get_issue` – read the issue and all context
+2. `list_comments` – review discussion and prior decisions
+3. `save_comment` – post the decision with rationale
+4. `save_issue` – update priority, labels, or status as needed
 
-### Escalate to Board
-1. `save_comment` — describe blocker, @-mention Board user
-2. `save_issue` — apply `agent-blocked` label
+### Review a decomposition
+
+1. `get_issue` – read the parent issue
+2. `list_issues` – check existing sub-issues
+3. `save_issue` – create/modify sub-issues with correct sequencing and labels
+4. `save_comment` – post the approved breakdown
+
+### Communicate with the Board
+
+1. `save_comment` – post a status summary or recommendation
+2. Include @Board-User-Name for visibility
+
+### Coordinate cross-cutting work
+
+1. `list_issues` – find related issues across personas
+2. `save_comment` – post coordination notes on each relevant issue
+3. `save_issue` – update priorities to reflect sequencing decisions
 
 ## Not Used
 
-The CEO does not use repo tools (file read/write, git, bash, etc.). If an issue requires code investigation to triage, route it to the appropriate worker persona instead.
+The CEO does not use repo tools for implementation. If code investigation is needed to make a decision, request it from a worker persona rather than reading code directly.

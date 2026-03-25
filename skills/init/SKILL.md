@@ -34,10 +34,10 @@ Ask the user which persona set to scaffold:
 
 | Preset | Personas Created |
 |--------|-----------------|
-| **engineering** (default) | CEO, Backend, Frontend |
-| **full** | CEO, Backend, Frontend, Infra, QA |
-| **minimal** | CEO only |
-| **custom** | CEO + user-specified personas |
+| **engineering** (default) | Orchestrator, CEO, Backend, Frontend |
+| **full** | Orchestrator, CEO, Backend, Frontend, Infra, QA |
+| **minimal** | Orchestrator, CEO only |
+| **custom** | Orchestrator, CEO + user-specified personas |
 
 For "custom", ask the user to name each persona and its Linear label.
 
@@ -62,6 +62,10 @@ Use `mcp__claude_ai_Linear__list_issue_labels` first to check if labels already 
    .claude/woterclip/
    ├── config.yaml
    └── personas/
+       ├── orchestrator/
+       │   ├── SOUL.md
+       │   ├── TOOLS.md
+       │   └── config.yaml
        ├── ceo/
        │   ├── SOUL.md
        │   ├── TOOLS.md
@@ -107,7 +111,8 @@ Linear labels created:
 
 Config: .claude/woterclip/config.yaml
 Personas:
-  ✓ ceo      → default (no label)
+  ✓ orchestrator → default (no label)
+  ✓ ceo          → "ceo" label
   ✓ backend  → "backend" label
   ✓ frontend → "frontend" label
 

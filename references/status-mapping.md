@@ -20,7 +20,7 @@ Maps between Linear issue states and WoterClip agent states.
 | **Work completed** | → Done (or In Review if PR opened) | Remove `agent-working` |
 | **Work in progress** | Stay In Progress | Keep `agent-working` |
 | **Blocked** | Stay In Progress | Remove `agent-working`, add `agent-blocked` |
-| **Triaged by CEO** | Stay Todo | Add persona label |
+| **Triaged by Orchestrator** | Stay Todo | Add persona label |
 | **Decomposed** | Parent stays In Progress, sub-issues created as Todo | Add persona labels to sub-issues |
 
 ## Inbox Query
@@ -34,7 +34,7 @@ The heartbeat fetches all issues assigned to "me" (resolved dynamically by Linea
 
 ### Filter Rules
 
-- Skip issues without a persona label (unless CEO is default)
+- Skip issues without a persona label (unless Orchestrator is default)
 - Skip `agent-blocked` issues unless new human comments exist since last agent comment
 - Skip issues in states other than Todo or In Progress
 - If `--persona <name>` flag is set, only match that persona's label
