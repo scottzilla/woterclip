@@ -37,11 +37,11 @@ Check quiet hours: if `quiet_hours.enabled` and current time is within the quiet
 2. Filter client-side:
    - **Keep** only issues with status "In Progress" or "Todo"
    - **Skip** issues without a persona label (unless Orchestrator is default and issue has no label)
-   - **Skip** `agent-blocked` issues unless new human comments exist since the last agent comment (check via `mcp__claude_ai_Linear__list_comments`)
+   - **Skip** "Blocked" issues unless new human comments exist since the last agent comment (check via `mcp__claude_ai_Linear__list_comments`)
 3. Sort:
    - Primary: status — In Progress before Todo
    - Secondary: priority — Urgent > High > Medium > Low > None
-4. Detect stale `agent-working` labels: if an issue has `agent-working` but no heartbeat comment within `stale_lock_hours`, clean the stale label (remove `agent-working`, post cleanup comment).
+4. Detect stale "In Progress" issues: if an issue is "In Progress" but has no heartbeat comment within `stale_lock_hours`, move it to "Todo" via `mcp__claude_ai_Linear__save_issue` and post a cleanup comment.
 
 ## Step 3: Pick Issue
 
@@ -77,15 +77,14 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 - `mcp__claude_ai_Linear` should match any tool starting with `mcp__claude_ai_Linear__`
 - If a required tool prefix has **no matching tools** available → stop work on this issue immediately
   - Post a blocked comment naming the missing tool
-  - Apply `agent-blocked` label (read-modify-write)
-  - Remove `agent-working` if present
+  - Move issue to "Blocked" state via `mcp__claude_ai_Linear__save_issue`
   - Proceed to step 11 (next issue)
 
-## Step 6: Lock Issue
+## Step 6: Claim Issue
 
-1. Call `mcp__claude_ai_Linear__get_issue` to read the issue's current labels.
-2. If `agent-working` is already present (from a previous heartbeat on same issue), proceed without re-saving.
-3. Otherwise, append `agent-working` to the labels array and call `mcp__claude_ai_Linear__save_issue` with the full label set.
+1. Call `mcp__claude_ai_Linear__get_issue` to read the issue's current state.
+2. If the issue is already "In Progress" (resuming interrupted work), proceed without state change.
+3. If the issue is "Todo", transition to "In Progress" via `mcp__claude_ai_Linear__save_issue`.
 
 ## Step 7: Understand Context
 
@@ -109,7 +108,7 @@ Follow the persona's SOUL.md instructions. This step varies by persona:
 - Commit changes with descriptive conventional commit messages
 - Respect `max_turns` from persona config as a work budget
 
-**If Linear MCP becomes unavailable mid-work:** Stop immediately. Leave `agent-working` label in place (will be cleaned as stale on next heartbeat). Delete lockfile and exit with error log.
+**If Linear MCP becomes unavailable mid-work:** Stop immediately. The issue stays "In Progress" (will be detected as stale on next heartbeat if not resumed). Delete lockfile and exit with error log.
 
 ## Step 9: Report
 
@@ -129,15 +128,24 @@ Append heartbeat metadata to `.woterclip/heartbeat-log.jsonl`:
 
 ## Step 10: Update State
 
-Read the issue's current labels via `mcp__claude_ai_Linear__get_issue`, then update based on outcome:
+Transition the issue's Linear state based on outcome. Use `mcp__claude_ai_Linear__save_issue` for all transitions.
 
-| Outcome | Labels | Status |
-|---------|--------|--------|
-| **Completed** | Remove `agent-working` | Move to Done (or In Review if PR opened) |
-| **Blocked** | Remove `agent-working`, add `agent-blocked` | Keep In Progress |
-| **More work needed** | Keep `agent-working` | Keep In Progress |
+| Outcome | State Transition | Label Change |
+|---------|-----------------|--------------|
+| **Completed (confident)** | In Progress → Done | None |
+| **Completed (needs review)** | In Progress → In Review | None |
+| **Reassign to another persona** | In Progress → Todo | Swap persona label (remove own, add target) |
+| **Blocked** | In Progress → Blocked | None |
+| **More work needed** | Stay In Progress | None |
+
+**Completion judgment** — decide which path based on context:
+- **Done** — work is complete, tests pass, no ambiguity, low risk
+- **In Review** — code changes that affect users, architectural decisions, risk involved
+- **Reassign** — out of scope for this persona, needs different expertise or approval
 
 For blocked issues: include the Board user's display name in the comment text (e.g., "**@Alex Kim** — please review").
+
+For reassignment: post a handoff comment (see `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md` reassignment template) explaining what was done and what the next persona needs to do.
 
 ## Step 11: Next Issue or Exit
 
