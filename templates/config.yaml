@@ -28,9 +28,7 @@ heartbeat:
 
 # Linear label configuration
 labels:
-  group: "WoterClip"                 # Parent label group (auto-created by init)
-  working: "agent-working"           # Applied while agent is working an issue
-  blocked: "agent-blocked"           # Applied when agent is blocked
+  group: "WoterClip"                 # Parent label group for persona labels (auto-created by init)
 
 # Persona routing: Linear label → persona directory
 # The Orchestrator (is_default: true) handles issues with no persona label
