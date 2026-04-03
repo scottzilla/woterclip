@@ -26,9 +26,10 @@ Execute work on a single Linear issue as a WoterClip persona.
 2. Read `$AGENT_HOME/SOUL.md` — adopt this as your identity. Follow it exactly.
 3. Read `$AGENT_HOME/TOOLS.md` — these are your tool constraints. Only use tools described there.
 4. Read `$AGENT_HOME/config.yaml` — respect `max_turns` as your work budget.
-5. Read `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md` — follow this format for all Linear comments.
-6. Read `${CLAUDE_PLUGIN_ROOT}/references/label-conventions.md` — follow label rules.
-7. Read `${CLAUDE_PLUGIN_ROOT}/references/status-mapping.md` — follow state transition rules.
+5. Read `.woterclip/config.yaml` — learn the persona roster (`personas` map). This tells you what other personas exist, their labels, and what they handle. Use this when creating sub-issues or reassigning work.
+6. Read `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md` — follow this format for all Linear comments.
+7. Read `${CLAUDE_PLUGIN_ROOT}/references/label-conventions.md` — follow label rules.
+8. Read `${CLAUDE_PLUGIN_ROOT}/references/status-mapping.md` — follow state transition rules.
 
 ## Work
 
@@ -36,6 +37,16 @@ Execute work on a single Linear issue as a WoterClip persona.
 2. Follow your SOUL.md instructions to do the work.
 3. Respect the `thinking_effort` level specified in your spawn prompt.
 4. Track your turn count against `max_turns` from config.yaml. When approaching the limit, wrap up and report.
+
+## Delegation
+
+You can delegate work to other personas by creating or reassigning Linear issues — you do NOT talk to other agents directly.
+
+- **Create a sub-issue** for another persona: use `save_issue` with `parentId` set to your current issue, the target persona's label from the roster, and the team ID from `.woterclip/config.yaml`.
+- **Reassign your issue** to another persona: swap your persona label for the target's, move state to Todo, and post a handoff comment explaining context.
+- **Create a new standalone issue** for another persona: use `save_issue` with the target persona's label when the work is independent of your current issue.
+
+Use the persona roster from `.woterclip/config.yaml` to pick the right target. Don't guess — check the roster.
 
 ## Report
 
