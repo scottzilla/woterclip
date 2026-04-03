@@ -43,16 +43,17 @@ Check quiet hours: if `quiet_hours.enabled` and current time is within the quiet
    - Secondary: priority — Urgent > High > Medium > Low > None
 4. Detect stale "In Progress" issues: if an issue is "In Progress" but has no heartbeat comment within `stale_lock_hours`, move it to "Todo" via `mcp__claude_ai_Linear__save_issue` and post a cleanup comment.
 
-## Step 3: Pick Issue
+## Step 3: Collect Ready Issues
 
 1. If `--persona <name>` flag is set, filter to only issues matching that persona's label.
-2. Pick the first issue from the sorted inbox.
+2. Collect up to `max_issues_per_heartbeat` issues from the sorted inbox.
 3. If `--dry-run`, report what would be picked and exit:
    ```
    Dry run — would pick:
      WOT-XX [backend] "Issue title" (In Progress, High)
-   Queue:
      WOT-YY [frontend] "Other issue" (Todo, Medium)
+   Queue (deferred to next heartbeat):
+     WOT-ZZ [backend] "Third issue" (Todo, Low)
    ```
 4. If no issues match → delete lockfile and exit: "No issues in queue. Heartbeat complete."
 
@@ -78,7 +79,7 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 - If a required tool prefix has **no matching tools** available → stop work on this issue immediately
   - Post a blocked comment naming the missing tool
   - Move issue to "Blocked" state via `mcp__claude_ai_Linear__save_issue`
-  - Proceed to step 11 (next issue)
+  - Proceed to step 11 (next cycle)
 
 ## Step 6: Claim Issue
 
@@ -93,63 +94,47 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 3. Identify new comments since the last heartbeat (look for comments after the last WoterClip-formatted comment).
 4. Parse heartbeat counter: find the last comment matching `Heartbeat #N` pattern. Next comment will be `#N+1`. If none found, start at `#1`.
 
-## Step 8: Do Work
+## Step 8: Dispatch Sub-Agents
 
-Follow the persona's SOUL.md instructions. This step varies by persona:
+For each collected issue, spawn a persona sub-agent:
 
-**Orchestrator persona:** Triage the issue – apply persona labels, create sub-issues, or escalate. Never write code.
+1. Resolve persona label → persona directory (`$AGENT_HOME = .woterclip/personas/{persona_name}`).
+2. Read `$AGENT_HOME/config.yaml` → extract `runtime.model` and `runtime.thinking_effort`.
+3. Spawn a `persona-worker` sub-agent via the Agent tool:
+   - `subagent_type`: `"persona-worker"`
+   - `model`: from persona config
+   - `isolation`: `"worktree"`
+   - `prompt`: include `$AGENT_HOME`, thinking effort, issue ID, title, description, and recent comments
 
-**CEO persona:** Make strategic decisions – prioritization, scope, architecture, coordination. Never write code.
+**Spawn all sub-agents in a single message** to enable parallel execution. Each sub-agent:
+- Reads its SOUL.md, TOOLS.md, and config.yaml at startup
+- Works the assigned issue following persona instructions
+- Posts heartbeat comments and updates Linear state
+- Returns a summary to the orchestrator
 
-**Worker personas (backend, frontend, etc.):**
-- Use repo tools (Read, Write, Edit, Bash, Grep, Glob) to implement changes
-- For large scope: create Linear sub-issues via `mcp__claude_ai_Linear__save_issue` with `parentId` set to current issue, `team` from config, appropriate persona labels, and `projectId` from the parent issue (or look up the best-fit project via `mcp__claude_ai_Linear__list_projects`; create a new project if none fits)
-- For small scope: work directly, use internal tasks to track progress
-- Commit changes with descriptive conventional commit messages
-- Respect `max_turns` from persona config as a work budget
+**If Linear MCP becomes unavailable before dispatch:** Stop immediately. Delete lockfile and exit with error log. Issues stay in their current state (will be detected as stale on next heartbeat if In Progress).
 
-**If Linear MCP becomes unavailable mid-work:** Stop immediately. The issue stays "In Progress" (will be detected as stale on next heartbeat if not resumed). Delete lockfile and exit with error log.
+## Step 9: Collect Results
 
-## Step 9: Report
+After all sub-agents return:
 
-Post a structured comment on the Linear issue via `mcp__claude_ai_Linear__save_comment`.
+1. Parse each sub-agent's summary for: issue ID, final state, commits, sub-issues created, escalation flag.
+2. For any escalations (Blocked, Reassigned), log them for the heartbeat summary.
+3. Append aggregate heartbeat metadata to `.woterclip/heartbeat-log.jsonl`:
 
-Follow the comment format from `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md`:
-- Include `Heartbeat #N` counter (incremented from step 7)
-- Include timestamp and duration
-- Include persona name in footer
-- List commits with SHAs, sub-issues created, and next steps
-- For blocked status: name who needs to act (Board user from config `linear.user_name`)
+    {"heartbeat": N, "timestamp": "ISO", "issues_dispatched": N, "results": [{"issue": "WOT-XX", "persona": "name", "status": "done|blocked|in_progress|reassigned", "commits": N, "sub_issues": N}], "duration_sec": N}
 
-Append heartbeat metadata to `.woterclip/heartbeat-log.jsonl`:
-```json
-{"heartbeat": N, "timestamp": "ISO", "issue": "WOT-XX", "persona": "name", "duration_sec": N, "status": "in_progress|completed|blocked", "actions": ["description"]}
-```
+Note: Individual issue comments and state transitions are handled by sub-agents in Step 8. The orchestrator does not post per-issue comments.
 
 ## Step 10: Update State
 
-Transition the issue's Linear state based on outcome. Use `mcp__claude_ai_Linear__save_issue` for all transitions.
+Issue state transitions are handled by sub-agents during Step 8. The orchestrator does not update individual issue states after dispatch.
 
-| Outcome | State Transition | Label Change |
-|---------|-----------------|--------------|
-| **Completed (confident)** | In Progress → Done | None |
-| **Completed (needs review)** | In Progress → In Review | None |
-| **Reassign to another persona** | In Progress → Todo | Swap persona label (remove own, add target) |
-| **Blocked** | In Progress → Blocked | None |
-| **More work needed** | Stay In Progress | None |
+If the orchestrator performed triage actions (labeling, decomposing) before dispatch, those state updates happen in Step 8 as part of triage — not here.
 
-**Completion judgment** — decide which path based on context:
-- **Done** — work is complete, tests pass, no ambiguity, low risk
-- **In Review** — code changes that affect users, architectural decisions, risk involved
-- **Reassign** — out of scope for this persona, needs different expertise or approval
+## Step 11: Next Cycle or Exit
 
-For blocked issues: include the Board user's display name in the comment text (e.g., "**@Alex Kim** — please review").
-
-For reassignment: post a handoff comment (see `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md` reassignment template) explaining what was done and what the next persona needs to do.
-
-## Step 11: Next Issue or Exit
-
-1. If issues worked this heartbeat < `max_issues_per_heartbeat`, return to **Step 2** to pick the next issue.
+1. If there are remaining issues in the inbox beyond `max_issues_per_heartbeat`, return to **Step 2** for the next batch.
 2. Otherwise, delete lockfile and exit.
 3. If 0 todo issues remain in queue, suggest pausing the schedule.
-4. If 3+ issues are blocked, suggest Board attention rather than more heartbeats.
+4. If 3+ issues are blocked across sub-agent results, suggest Board attention rather than more heartbeats.

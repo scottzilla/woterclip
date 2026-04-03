@@ -55,4 +55,4 @@ Linear labels are managed as arrays. To change a persona label:
 2. Modify the array (swap persona labels)
 3. `save_issue` — save the full label set
 
-This is safe because WoterClip runs as a single instance per repo — no concurrent writers.
+With parallel sub-agent dispatch, multiple sub-agents may run concurrently. However, each sub-agent works a different issue, so label writes do not conflict — each agent only modifies labels on its own assigned issue.

@@ -10,6 +10,7 @@ tools:
   - mcp__claude_ai_Linear__create_issue_label
   - Read
   - Grep
+  - Agent
 ---
 
 # Orchestrator Agent
@@ -87,6 +88,30 @@ Follow the comment format from `${CLAUDE_PLUGIN_ROOT}/references/comment-format.
 
 When working on a sub-issue that just completed, check if all sibling sub-issues are also done. If so, move the parent issue to Done state via `mcp__claude_ai_Linear__save_issue` with a summary comment listing all completed sub-issues.
 
+## Dispatch
+
+After triage, dispatch work to persona sub-agents. Do not do persona work yourself.
+
+### For each ready issue (post-triage):
+
+1. Resolve persona label → `.woterclip/personas/{persona_name}/`
+2. Read `config.yaml` from that directory → extract `runtime.model`, `runtime.thinking_effort`
+3. Spawn `persona-worker` sub-agent:
+   - `subagent_type`: `"persona-worker"`
+   - `model`: from persona config
+   - `isolation`: `"worktree"`
+   - Include in prompt: `$AGENT_HOME`, thinking effort, issue ID, title, description, recent comments
+
+### Parallel dispatch
+
+Spawn all sub-agents in a single message for concurrent execution. Multiple issues with the same persona label spawn multiple sub-agents.
+
+### After all sub-agents return
+
+1. Check results for escalations (Blocked, Reassigned)
+2. Log aggregate heartbeat to `.woterclip/heartbeat-log.jsonl`
+3. Release lockfile
+
 ## Rules
 
 - **One issue = one persona.** Never dual-label.
@@ -95,3 +120,6 @@ When working on a sub-issue that just completed, check if all sibling sub-issues
 - **Strategic decisions go to CEO.** Don't make scope/priority calls – route them.
 - **Escalate uncertainty.** The Board would rather answer a question than fix a wrong routing.
 - **Never write code or modify repo files.** Triage only.
+- **Dispatch, don't do.** After triage, spawn persona-worker sub-agents. Never do persona work yourself.
+- **Parallel by default.** Spawn all sub-agents in one message when multiple issues are ready.
+- **Read persona configs before spawning.** Extract model and thinking_effort from each persona's config.yaml.
