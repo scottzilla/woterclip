@@ -42,11 +42,10 @@ New issue (no labels)
 
 When an agent hands off to another persona:
 
-1. Read current labels via `get_issue`
+1. Read current labels via `mcp__claude_ai_Linear__get_issue`
 2. Remove own persona label, add target persona label
-3. Save the full label set via `save_issue`
-4. Move state to Todo (in the same `save_issue` call)
-5. Post a handoff comment explaining what the next persona needs to do
+3. Save the full label set and move state to Todo in a single `mcp__claude_ai_Linear__save_issue` call
+4. Post a handoff comment via `mcp__claude_ai_Linear__save_comment` explaining what the next persona needs to do
 
 ## Read-Modify-Write Pattern
 

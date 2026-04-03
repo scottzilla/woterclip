@@ -72,6 +72,7 @@ For each sub-issue:
    - `teamId` – From config `linear.team`
    - `parentId` – The parent issue's ID
    - `labelIds` – Include the persona label
+   - `projectId` – Look up existing projects via `mcp__claude_ai_Linear__list_projects`. Assign to the most relevant project. If no existing project fits, create one via `mcp__claude_ai_Linear__create_project`.
    - `priority` – Inherit from parent; blocking sub-issues get +1 priority bump
 2. Post a comment on the parent summarizing the decomposition
 
@@ -84,7 +85,7 @@ Follow the comment format from `${CLAUDE_PLUGIN_ROOT}/references/comment-format.
 
 ### 6. Parent Completion Check
 
-When working on a sub-issue that just completed, check if all sibling sub-issues are also done. If so, move the parent issue to Done state with a summary comment listing all completed sub-issues.
+When working on a sub-issue that just completed, check if all sibling sub-issues are also done. If so, move the parent issue to Done state via `mcp__claude_ai_Linear__save_issue` with a summary comment listing all completed sub-issues.
 
 ## Rules
 

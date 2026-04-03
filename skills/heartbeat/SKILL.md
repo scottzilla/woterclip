@@ -103,7 +103,7 @@ Follow the persona's SOUL.md instructions. This step varies by persona:
 
 **Worker personas (backend, frontend, etc.):**
 - Use repo tools (Read, Write, Edit, Bash, Grep, Glob) to implement changes
-- For large scope: create Linear sub-issues via `mcp__claude_ai_Linear__save_issue` with `parentId` set to current issue, `team` from config, and appropriate persona labels
+- For large scope: create Linear sub-issues via `mcp__claude_ai_Linear__save_issue` with `parentId` set to current issue, `team` from config, appropriate persona labels, and `projectId` from the parent issue (or look up the best-fit project via `mcp__claude_ai_Linear__list_projects`; create a new project if none fits)
 - For small scope: work directly, use internal tasks to track progress
 - Commit changes with descriptive conventional commit messages
 - Respect `max_turns` from persona config as a work budget
