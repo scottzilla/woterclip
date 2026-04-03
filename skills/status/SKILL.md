@@ -32,11 +32,12 @@ If no log file exists, report "No heartbeat history found."
 
 ### Step 4: Current Issues
 
-Call `mcp__claude_ai_Linear__list_issues` with `assignee: "me"`. Filter and categorize:
+Call `mcp__claude_ai_Linear__list_issues` with `assignee: "me"`. Filter and categorize by Linear state:
 
 **Since last heartbeat** (issues that changed since the last logged heartbeat timestamp):
-- `✓` Completed issues
-- `→` In Progress issues
+- `✓` Done issues (completed)
+- `→` In Progress issues (actively being worked)
+- `⏸` In Review issues (awaiting human review)
 - `✗` Blocked issues
 - `+` Newly created sub-issues
 
@@ -45,7 +46,7 @@ Call `mcp__claude_ai_Linear__list_issues` with `assignee: "me"`. Filter and cate
 - Show: issue ID, persona label, status, priority, title
 
 **Blocked** (needs Board attention):
-- Issues with `agent-blocked` label
+- Issues in "Blocked" state
 - Show: issue ID, Board user mention, blocker summary from last agent comment
 
 ### Step 5: Format Output
@@ -56,8 +57,9 @@ WoterClip Status
 Last beat:    Heartbeat #N — X min ago
 
 Since last heartbeat:
-  ✓ WOT-XX  [persona]   Completed    "Title"
+  ✓ WOT-XX  [persona]   Done         "Title"
   → WOT-XX  [persona]   In Progress  "Title"
+  ⏸ WOT-XX  [persona]   In Review    "Title"
   ✗ WOT-XX  [persona]   Blocked      "Title"
 
 Queue (next heartbeat):
