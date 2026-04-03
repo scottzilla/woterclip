@@ -1,6 +1,6 @@
 # Status Mapping
 
-Maps between Linear issue states and WoterClip agent states.
+Maps between Linear issue states and WoterClip agent behavior. Linear states are the single source of truth for issue lifecycle.
 
 ## Linear States → WoterClip Behavior
 
@@ -8,20 +8,26 @@ Maps between Linear issue states and WoterClip agent states.
 |-------------|-------------------|
 | **Backlog** | Ignored — not in the inbox |
 | **Todo** | In the inbox, eligible for pickup (lower priority than In Progress) |
-| **In Progress** | In the inbox, priority pickup (agent or human started work) |
+| **In Progress** | In the inbox for resume; agent is actively working |
+| **Blocked** | Skipped unless new human comments exist since last agent comment |
 | **In Review** | Ignored — human is reviewing, agent should not touch |
 | **Done** | Ignored — completed |
 | **Canceled** | Ignored — canceled |
 
-## WoterClip Outcomes → Linear State Changes
+## State Transitions
 
-| Heartbeat Outcome | Linear State Transition | Labels Changed |
-|-------------------|------------------------|----------------|
-| **Work completed** | → Done (or In Review if PR opened) | Remove `agent-working` |
-| **Work in progress** | Stay In Progress | Keep `agent-working` |
-| **Blocked** | Stay In Progress | Remove `agent-working`, add `agent-blocked` |
-| **Triaged by Orchestrator** | Stay Todo | Add persona label |
-| **Decomposed** | Parent stays In Progress, sub-issues created as Todo | Add persona labels to sub-issues |
+| Trigger | From State | To State | Actor |
+|---------|-----------|----------|-------|
+| Heartbeat picks up issue | Todo | In Progress | Agent |
+| Work completed, agent confident | In Progress | Done | Agent |
+| Work completed, wants human check | In Progress | In Review | Agent |
+| Work completed, needs another persona | In Progress | Todo (+ swap persona label) | Agent |
+| Agent is blocked | In Progress | Blocked | Agent |
+| Human unblocks issue | Blocked | Todo | Human |
+| Human approves review | In Review | Done | Human |
+| Human requests changes | In Review | Todo | Human |
+
+All state transitions use `mcp__claude_ai_Linear__save_issue` with the target state name.
 
 ## Inbox Query
 
@@ -35,11 +41,11 @@ The heartbeat fetches all issues assigned to "me" (resolved dynamically by Linea
 ### Filter Rules
 
 - Skip issues without a persona label (unless Orchestrator is default)
-- Skip `agent-blocked` issues unless new human comments exist since last agent comment
+- Skip Blocked issues unless new human comments exist since last agent comment
 - Skip issues in states other than Todo or In Progress
 - If `--persona <name>` flag is set, only match that persona's label
 
 ## Stale Detection
 
-- `agent-working` label with no heartbeat comment in the last `stale_lock_hours` → stale lock
-- Heartbeat cleans stale locks: removes `agent-working`, posts a comment explaining the cleanup
+- "In Progress" state with no heartbeat comment in the last `stale_lock_hours` → stale
+- Heartbeat cleans stale issues: moves to Todo, posts a comment explaining the cleanup
