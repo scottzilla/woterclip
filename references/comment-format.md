@@ -46,6 +46,26 @@ Clear description of what is blocking progress.
 *WoterClip · persona-name · [WOT-XX](link)*
 ```
 
+## Reassignment Template
+
+```markdown
+## Heartbeat #N — YYYY-MM-DD HH:MM UTC (duration)
+
+**Status:** Reassigned → persona-name
+
+### What was done
+- Work completed before handoff
+
+### Handoff context
+What the next persona needs to know and do.
+
+### Why reassigning
+Reason this work belongs to the other persona.
+
+---
+*WoterClip · original-persona-name · [WOT-XX](link) · from [Heartbeat #N-1](link)*
+```
+
 ## Rules
 
 - Always include heartbeat counter (`#N`) and timestamp with duration
@@ -55,6 +75,7 @@ Clear description of what is blocking progress.
 - Completion comments must list shipped commits/PRs with links
 - Use `⚠️` flag for uncertain work that needs manual verification
 - Fast-path triage comments: `**Triage:** → backend` for obvious routing
+- Reassignment comments must explain what was done, what the next persona needs to do, and why the handoff is happening
 
 ## Heartbeat Counter
 
