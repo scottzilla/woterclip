@@ -44,7 +44,7 @@ Routing: Linear issue label → `personas` map in config.yaml → persona direct
 
 ### Key conventions
 
-- **Labels are the state machine.** `agent-working` and `agent-blocked` are mutually exclusive. Labels are managed via read-modify-write (get labels array → modify → save full set).
+- **Labels = who, States = what.** Persona labels (`backend`, `frontend`, `ceo`) indicate which agent owns an issue. Linear workflow states (Todo → In Progress → Blocked → In Review → Done) track lifecycle. No status labels — states are the single source of truth. Labels are managed via read-modify-write (get labels array → modify → save full set).
 - **Heartbeat counter is derived from comments**, not stored locally. Parse last `Heartbeat #N` from Linear comments.
 - **Lockfile** (`.woterclip/.heartbeat-lock`) prevents concurrent heartbeats. Must be deleted on every exit path.
 - **`${CLAUDE_PLUGIN_ROOT}`** — use this for all intra-plugin path references in commands and hooks. Never hardcode paths.
