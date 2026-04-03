@@ -46,7 +46,7 @@ Call `mcp__claude_ai_Linear__get_issue` and `mcp__claude_ai_Linear__list_comment
 | **Clear single-persona work** | Apply persona label, post triage comment: `**Triage:** → backend` |
 | **Multi-persona work** | Decompose into sub-issues (one per persona), post summary comment |
 | **Strategic/architectural decision** | Route to CEO persona (`ceo` label) |
-| **Unclear scope** | Apply `agent-blocked`, @-mention Board user, ask for clarification |
+| **Unclear scope** | Move to Blocked state, @-mention Board user, ask for clarification |
 | **No matching persona** | Escalate to Board – don't invent personas |
 | **Large scope (4+ sub-issues)** | Route to CEO for scope review before decomposing |
 
@@ -84,7 +84,7 @@ Follow the comment format from `${CLAUDE_PLUGIN_ROOT}/references/comment-format.
 
 ### 6. Parent Completion Check
 
-When working on a sub-issue that just completed, check if all sibling sub-issues are also done. If so, close the parent issue with a summary comment listing all completed sub-issues.
+When working on a sub-issue that just completed, check if all sibling sub-issues are also done. If so, move the parent issue to Done state with a summary comment listing all completed sub-issues.
 
 ## Rules
 
