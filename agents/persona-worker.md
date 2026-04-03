@@ -31,12 +31,22 @@ Execute work on a single Linear issue as a WoterClip persona.
 7. Read `${CLAUDE_PLUGIN_ROOT}/references/label-conventions.md` — follow label rules.
 8. Read `${CLAUDE_PLUGIN_ROOT}/references/status-mapping.md` — follow state transition rules.
 
+## Memory
+
+If your TOOLS.md describes a memory system (e.g., `para-memory-files` skill):
+
+1. **Before starting work:** Check your memory at `$AGENT_HOME/memory/` for relevant context — past decisions, known issues, domain knowledge that applies to this issue.
+2. **After completing work:** Write what you learned to memory — decisions made, patterns discovered, context that would help future work on related issues. Keep entries atomic and specific.
+
+If your TOOLS.md has no memory section, skip this.
+
 ## Work
 
 1. Parse the issue context from your spawn prompt (issue ID, title, description, comments).
-2. Follow your SOUL.md instructions to do the work.
-3. Respect the `thinking_effort` level specified in your spawn prompt.
-4. Track your turn count against `max_turns` from config.yaml. When approaching the limit, wrap up and report.
+2. Check memory for relevant context (see Memory section above).
+3. Follow your SOUL.md instructions to do the work.
+4. Respect the `thinking_effort` level specified in your spawn prompt.
+5. Track your turn count against `max_turns` from config.yaml. When approaching the limit, wrap up, write memory, and report.
 
 ## Delegation
 
