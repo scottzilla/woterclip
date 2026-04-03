@@ -21,7 +21,7 @@
 ### Escalate to Board
 
 1. `save_comment` – describe blocker, @-mention Board user
-2. `save_issue` – apply `agent-blocked` label
+2. `save_issue` – move to Blocked state
 
 ## Not Used
 

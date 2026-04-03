@@ -69,7 +69,7 @@ Each `/heartbeat` runs an 11-step cycle:
 3. **Pick issue** – highest priority In Progress, then Todo
 4. **Resolve persona** – match issue label → persona directory, load SOUL.md + TOOLS.md
 5. **Validate tools** – check required MCP tools are available
-6. **Lock issue** – add `agent-working` label
+6. **Claim issue** – move to In Progress state
 7. **Understand context** – read issue, comments, parent, heartbeat counter
 8. **Do work** – follow persona instructions (CEO triages, workers implement)
 9. **Report** – post structured comment with progress, commits, sub-issues
@@ -141,15 +141,15 @@ After `/woterclip-init`, your repo gets:
 
 ## Label System
 
-WoterClip uses Linear labels for state management:
+WoterClip uses Linear labels solely for persona assignment. Workflow status is tracked via Linear's built-in states.
 
 | Label | Purpose |
 |-------|---------|
-| `agent-working` | Agent is actively working this issue |
-| `agent-blocked` | Agent is blocked, needs Board attention |
 | `backend`, `frontend`, etc. | Routes issue to the matching persona |
 
-All labels live under a "WoterClip" parent group in Linear, created by `/woterclip-init`.
+**Workflow states** (Todo → In Progress → Blocked → In Review → Done) are the single source of truth for issue lifecycle. Labels are managed via read-modify-write (get labels array → modify → save full set).
+
+All persona labels live under a "WoterClip" parent group in Linear, created by `/woterclip-init`.
 
 ## Schedule Cadences
 
