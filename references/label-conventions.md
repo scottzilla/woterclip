@@ -1,24 +1,12 @@
 # Label Conventions
 
-WoterClip uses Linear labels for persona routing and agent state tracking.
+WoterClip uses Linear labels exclusively for persona assignment — routing issues to the right agent persona.
+
+**Labels = who owns the issue. States = where it is in the lifecycle.**
 
 ## Label Group
 
 All WoterClip labels live under a parent group (default: `WoterClip`). The group name is configurable in `config.yaml` → `labels.group`.
-
-## State Labels
-
-| Label | Purpose | Applied by | Removed by |
-|-------|---------|------------|------------|
-| `agent-working` | Agent is actively working this issue | Heartbeat (step 6) | Heartbeat (step 10) on done/blocked |
-| `agent-blocked` | Agent is blocked, needs Board attention | Heartbeat (step 10) | Board (manually) or heartbeat when new context appears |
-
-### State Label Rules
-
-- `agent-working` and `agent-blocked` are mutually exclusive — never both present
-- `agent-working` is added via read-modify-write: read current labels, append, save full set
-- Stale `agent-working` labels (older than `stale_lock_hours`) are auto-cleaned by the heartbeat
-- `agent-blocked` issues are skipped unless new human comments exist since the last agent comment
 
 ## Persona Labels
 
@@ -31,7 +19,7 @@ Persona labels route issues to the right persona. Created by `/woterclip-init`.
 | `infra` | Infra Engineer | Deploy, CI/CD, Docker, env vars, infrastructure |
 | `qa` | QA Engineer | Test, coverage, E2E, integration test, flaky |
 | `ceo` | CEO | Strategy, prioritization, roadmap, architecture, cross-cutting |
-| *(none)* | Orchestrator (default) | Unlabeled issues – routed by the Orchestrator |
+| *(none)* | Orchestrator (default) | Unlabeled issues — routed by the Orchestrator |
 
 ### Persona Label Rules
 
@@ -44,19 +32,28 @@ Persona labels route issues to the right persona. Created by `/woterclip-init`.
 ```
 New issue (no labels)
   → Orchestrator triages → adds persona label (e.g., "backend")
-  → Heartbeat picks up → adds "agent-working"
-  → Work completes → removes "agent-working"
-  → Or blocked → removes "agent-working", adds "agent-blocked"
-  → Board unblocks → removes "agent-blocked"
-  → Next heartbeat picks up again
+  → Heartbeat picks up → state moves to In Progress (no label change)
+  → Work completes → state moves to Done/In Review (no label change)
+  → Or blocked → state moves to Blocked (no label change)
+  → Or reassigned → persona label swapped, state moves to Todo
 ```
+
+## Reassignment
+
+When an agent hands off to another persona:
+
+1. Read current labels via `get_issue`
+2. Remove own persona label, add target persona label
+3. Save the full label set via `save_issue`
+4. Move state to Todo (in the same `save_issue` call)
+5. Post a handoff comment explaining what the next persona needs to do
 
 ## Read-Modify-Write Pattern
 
-Linear labels are managed as arrays. To add or remove a label:
+Linear labels are managed as arrays. To change a persona label:
 
 1. `get_issue` — read current labels array
-2. Modify the array (push or filter)
+2. Modify the array (swap persona labels)
 3. `save_issue` — save the full label set
 
 This is safe because WoterClip runs as a single instance per repo — no concurrent writers.
