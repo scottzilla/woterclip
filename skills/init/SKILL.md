@@ -43,12 +43,10 @@ For "custom", ask the user to name each persona and its Linear label.
 
 ### Step 3: Create Linear Labels
 
-Create the WoterClip label group and child labels in Linear:
+Create the WoterClip label group and persona labels in Linear:
 
 1. Call `mcp__claude_ai_Linear__create_issue_label` to create the parent group label named after `labels.group` (default: "WoterClip")
 2. Create child labels under this group:
-   - `agent-working` — state label for active work
-   - `agent-blocked` — state label for blocked issues
    - One label per persona that has a non-null label (e.g., `backend`, `frontend`)
 
 Use `mcp__claude_ai_Linear__list_issue_labels` first to check if labels already exist. Skip creation for any label that already exists.
@@ -104,8 +102,6 @@ WoterClip initialized!
 
 Linear labels created:
   ✓ WoterClip (group)
-  ✓ agent-working
-  ✓ agent-blocked
   ✓ backend
   ✓ frontend
 
