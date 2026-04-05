@@ -84,9 +84,11 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 
 ## Step 6: Claim Issue
 
+> **CRITICAL: You MUST set `assignee: "me"` on every issue before doing any work. This is the concurrency lock — without it, multiple agents can work the same issue simultaneously. Never skip this step.**
+
 1. Call `mcp__claude_ai_Linear__get_issue` to read the issue's current state.
-2. **Check assignee**: if the issue already has an assignee, skip it — another agent or human has claimed it.
-3. **Claim**: call `mcp__claude_ai_Linear__save_issue` with `assignee: "me"` to lock the issue.
+2. **Check assignee**: if the issue already has an assignee, **STOP — do not work this issue.** Another agent or human has claimed it. Proceed to the next issue.
+3. **Claim**: call `mcp__claude_ai_Linear__save_issue` with `assignee: "me"` to lock the issue. This MUST happen before any other work on the issue.
 4. If the issue is "Todo", also transition to "In Progress" in the same `save_issue` call.
 5. If the issue is already "In Progress" (resuming interrupted work), just set assignee without state change.
 
@@ -122,7 +124,7 @@ For each collected issue, spawn a persona sub-agent:
 After all sub-agents return:
 
 1. Parse each sub-agent's summary for: issue ID, final state, commits, sub-issues created, escalation flag.
-2. **Release assignee**: for each completed or blocked issue, call `mcp__claude_ai_Linear__save_issue` with `assignee: null` to release the lock. Keep assignee set only for issues still "In Progress" (will resume next heartbeat).
+2. **MUST release assignee**: for every completed or blocked issue, call `mcp__claude_ai_Linear__save_issue` with `assignee: null` to release the lock. Failing to release leaves the issue permanently locked. Keep assignee set only for issues still "In Progress" (will resume next heartbeat).
 3. For any escalations (Blocked, Reassigned), log them for the heartbeat summary.
 4. Append aggregate heartbeat metadata to `.woterclip/heartbeat-log.jsonl`:
 

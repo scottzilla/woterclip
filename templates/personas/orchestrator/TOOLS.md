@@ -14,11 +14,13 @@
 4. `save_issue` – apply persona label, update status
 5. `save_comment` – post triage decision
 
-### Claim and release issues
+### Claim and release issues (REQUIRED)
 
-1. `save_issue` with `assignee: "me"` – claim an issue before dispatching to a persona worker
-2. `get_issue` – check assignee before working; skip if already claimed
-3. `save_issue` with `assignee: null` – release when the persona worker finishes (done or blocked)
+> **You MUST claim every issue before dispatch and release it after. This is the concurrency lock.**
+
+1. `save_issue` with `assignee: "me"` – **MUST** claim before dispatching to a persona worker. Never dispatch without claiming first.
+2. `get_issue` – check assignee before working; if already claimed, **do not work it — skip.**
+3. `save_issue` with `assignee: null` – **MUST** release when the persona worker finishes (done or blocked). Failing to release permanently locks the issue.
 
 ### Decompose into sub-issues
 
