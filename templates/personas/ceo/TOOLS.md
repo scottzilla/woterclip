@@ -25,11 +25,23 @@
 1. `save_comment` – post a status summary or recommendation
 2. Include @Board-User-Name for visibility
 
+### Set issue relations
+
+1. `save_issue` with `relatedTo: ["ISSUE-123"]` – link related issues
+2. `save_issue` with `blockedBy: ["ISSUE-456"]` – mark an issue as blocked by another
+3. `save_issue` with `blocks: ["ISSUE-789"]` – mark an issue as blocking another
+4. `save_issue` with `duplicateOf: "ISSUE-100"` – mark as duplicate (auto-cancels the issue)
+5. To remove: use `removeRelatedTo`, `removeBlockedBy`, or `removeBlocks` arrays
+6. To unmark duplicate: `duplicateOf: null`
+
+All relation arrays are **append-only** — existing relations are never removed unless you use the explicit remove fields.
+
 ### Coordinate cross-cutting work
 
 1. `list_issues` – find related issues across personas
-2. `save_comment` – post coordination notes on each relevant issue
-3. `save_issue` – update priorities to reflect sequencing decisions
+2. `save_issue` with `relatedTo` / `blockedBy` / `blocks` – link issues to express sequencing
+3. `save_comment` – post coordination notes on each relevant issue
+4. `save_issue` – update priorities to reflect sequencing decisions
 
 ## Not Used
 

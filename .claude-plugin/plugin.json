@@ -1,6 +1,6 @@
 {
   "name": "woterclip",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Linear-backed agent orchestration with persona-based task routing for Claude Code",
   "author": {
     "name": "Alex Kim"

@@ -33,9 +33,10 @@ Check quiet hours: if `quiet_hours.enabled` and current time is within the quiet
 
 ## Step 2: Check Inbox
 
-1. Call `mcp__claude_ai_Linear__list_issues` with filter for assigned issues (`assignee: "me"`).
+1. Call `mcp__claude_ai_Linear__list_issues` to fetch issues in the project, excluding Done, Canceled, and Duplicate states.
 2. Filter client-side:
    - **Keep** only issues with status "In Progress" or "Todo"
+   - **Skip** issues that have an assignee (claimed by another agent or human) — except issues the orchestrator itself claimed in a previous heartbeat (assignee is "me" and status is "In Progress")
    - **Skip** issues without a persona label (unless Orchestrator is default and issue has no label)
    - **Skip** "Blocked" issues unless new human comments exist since the last agent comment (check via `mcp__claude_ai_Linear__list_comments`)
 3. Sort:
@@ -84,8 +85,10 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 ## Step 6: Claim Issue
 
 1. Call `mcp__claude_ai_Linear__get_issue` to read the issue's current state.
-2. If the issue is already "In Progress" (resuming interrupted work), proceed without state change.
-3. If the issue is "Todo", transition to "In Progress" via `mcp__claude_ai_Linear__save_issue`.
+2. **Check assignee**: if the issue already has an assignee, skip it — another agent or human has claimed it.
+3. **Claim**: call `mcp__claude_ai_Linear__save_issue` with `assignee: "me"` to lock the issue.
+4. If the issue is "Todo", also transition to "In Progress" in the same `save_issue` call.
+5. If the issue is already "In Progress" (resuming interrupted work), just set assignee without state change.
 
 ## Step 7: Understand Context
 
@@ -119,8 +122,9 @@ For each collected issue, spawn a persona sub-agent:
 After all sub-agents return:
 
 1. Parse each sub-agent's summary for: issue ID, final state, commits, sub-issues created, escalation flag.
-2. For any escalations (Blocked, Reassigned), log them for the heartbeat summary.
-3. Append aggregate heartbeat metadata to `.woterclip/heartbeat-log.jsonl`:
+2. **Release assignee**: for each completed or blocked issue, call `mcp__claude_ai_Linear__save_issue` with `assignee: null` to release the lock. Keep assignee set only for issues still "In Progress" (will resume next heartbeat).
+3. For any escalations (Blocked, Reassigned), log them for the heartbeat summary.
+4. Append aggregate heartbeat metadata to `.woterclip/heartbeat-log.jsonl`:
 
     {"heartbeat": N, "timestamp": "ISO", "issues_dispatched": N, "results": [{"issue": "WOT-XX", "persona": "name", "status": "done|blocked|in_progress|reassigned", "commits": N, "sub_issues": N}], "duration_sec": N}
 

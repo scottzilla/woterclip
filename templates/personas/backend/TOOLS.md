@@ -25,6 +25,17 @@
 - Always create reversible migrations
 - Test migration up and down paths
 
+### Set issue relations
+
+Use `save_issue` to link issues discovered during implementation:
+- `blockedBy: ["ISSUE-456"]` – mark your issue as blocked by another
+- `blocks: ["ISSUE-789"]` – flag that your issue blocks another
+- `relatedTo: ["ISSUE-123"]` – link related issues
+- `duplicateOf: "ISSUE-100"` – mark as duplicate (auto-cancels the issue)
+- To remove: use `removeBlockedBy`, `removeBlocks`, or `removeRelatedTo` arrays
+
+All relation arrays are **append-only** — existing relations are never removed unless you use the explicit remove fields.
+
 ## Optional Tools
 
 Add to `required_tools` in config.yaml as needed:

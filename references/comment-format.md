@@ -5,6 +5,8 @@ All heartbeat comments follow a structured template posted via `mcp__claude_ai_L
 ## Standard Template
 
 ```markdown
+**🤖 persona-name**
+
 ## Heartbeat #N — YYYY-MM-DD HH:MM UTC (duration)
 
 **Status:** In Progress | Completed | Blocked
@@ -29,6 +31,8 @@ None
 ## Blocked Template
 
 ```markdown
+**🤖 persona-name**
+
 ## Heartbeat #N — YYYY-MM-DD HH:MM UTC (duration)
 
 **Status:** Blocked
@@ -49,6 +53,8 @@ Clear description of what is blocking progress.
 ## Reassignment Template
 
 ```markdown
+**🤖 original-persona-name**
+
 ## Heartbeat #N — YYYY-MM-DD HH:MM UTC (duration)
 
 **Status:** Reassigned → persona-name
@@ -68,6 +74,7 @@ Reason this work belongs to the other persona.
 
 ## Rules
 
+- Always start the comment with `**🤖 persona-name**` so the persona is immediately visible (all agents comment as the same Linear user)
 - Always include heartbeat counter (`#N`) and timestamp with duration
 - Always include persona name and issue link in footer
 - Reference previous heartbeat comment link for carry-forward context
