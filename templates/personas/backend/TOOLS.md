@@ -2,20 +2,27 @@
 
 ## Required
 
-- **Linear MCP** (`mcp__claude_ai_Linear__*`): Read issues, post comments, update status.
+- **Linear MCP** (`mcp__claude_ai_Linear__*`): Read issues, post comments, update status, check attachments, and reference project documents.
 - **Repo tools** (Read, Write, Edit, Bash, Grep, Glob): Full codebase access for implementation.
 
 ## Common Patterns
 
 ### Implement a feature
-1. Read the issue and existing code
-2. Create or modify files (Edit/Write)
-3. Run tests (Bash)
-4. Commit changes (Bash — git)
-5. Post heartbeat comment with commit SHAs (Linear MCP)
+1. Read the issue and check for attachments (`get_attachment`) — specs, API docs, data samples
+2. Read existing code
+3. Create or modify files (Edit/Write)
+4. Run tests (Bash)
+5. Commit changes (Bash — git)
+6. Post heartbeat comment with commit SHAs (Linear MCP)
+
+### Reference project documents
+
+1. `search_documentation` – find relevant project docs (API specs, architecture decisions, conventions)
+2. `get_document` – read a specific document before starting work
+3. Check project docs for coding conventions, API contracts, and integration notes
 
 ### Fix a bug
-1. Read the issue for reproduction steps
+1. Read the issue and check for attachments (`get_attachment`) — error screenshots, log samples, reproduction data
 2. Find relevant code (Grep/Glob)
 3. Fix and add regression test
 4. Commit and comment
@@ -35,6 +42,15 @@ Use `save_issue` to link issues discovered during implementation:
 - To remove: use `removeBlockedBy`, `removeBlocks`, or `removeRelatedTo` arrays
 
 All relation arrays are **append-only** — existing relations are never removed unless you use the explicit remove fields.
+
+## Memory (para-memory-files skill)
+
+Use the `para-memory-files` skill for persistent memory across sessions. Your `$AGENT_HOME` is `.woterclip/personas/backend/`.
+
+- **Daily notes** (`memory/YYYY-MM-DD.md`): Log what you worked on, blockers hit, and commits made each heartbeat.
+- **Knowledge graph** (`life/`): Track projects (active implementation work), areas (API quirks, data patterns), and resources (API docs findings, dependency notes).
+- **Tacit knowledge** (`MEMORY.md`): Record learned patterns — what approaches worked/failed, integration gotchas.
+- **Recall**: Use `qmd query` to search past work before starting new tasks. Avoid rediscovering known issues.
 
 ## Optional Tools
 

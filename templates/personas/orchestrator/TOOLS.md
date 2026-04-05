@@ -2,7 +2,7 @@
 
 ## Required
 
-- **Linear MCP** (`mcp__claude_ai_Linear__*`): Issue queries, label management, sub-issue creation, comments.
+- **Linear MCP** (`mcp__claude_ai_Linear__*`): Issue queries, label management, sub-issue creation, comments, attachments, and project documents.
 
 ## Usage Patterns
 
@@ -11,8 +11,9 @@
 1. `list_issues` – fetch assigned issues (inbox scan)
 2. `get_issue` – read issue details, labels, parent, assignee
 3. Skip issues that already have an assignee (claimed by another agent or human)
-4. `save_issue` – apply persona label, update status
-5. `save_comment` – post triage decision
+4. `get_attachment` – check for attachments (specs, screenshots, diagrams) that provide additional context
+5. `save_issue` – apply persona label, update status
+6. `save_comment` – post triage decision (note any attachments for the assigned persona)
 
 ### Claim and release issues (REQUIRED)
 
@@ -27,6 +28,12 @@
 1. `save_issue` with `parentId` – create child issues with persona labels
 2. `save_comment` on parent – summarize decomposition
 
+### Look up project context
+
+1. `search_documentation` – find relevant project docs (architecture decisions, specs, conventions)
+2. `get_document` – read a specific project document for context when triaging complex issues
+3. Use project docs to make better routing decisions and include relevant context in triage comments
+
 ### Set issue relations
 
 1. `save_issue` with `relatedTo: ["ISSUE-123"]` – link related issues during triage
@@ -40,8 +47,16 @@ All relation arrays are **append-only** — existing relations are never removed
 
 ### Escalate to Board
 
-1. `save_comment` – describe blocker, @-mention Board user
+1. `save_comment` – describe blocker, @-mention {{BOARD_USER}}
 2. `save_issue` – move to Blocked state
+
+## Memory (para-memory-files skill)
+
+Use the `para-memory-files` skill for persistent memory across sessions. Your `$AGENT_HOME` is `.woterclip/personas/orchestrator/`.
+
+- **Daily notes** (`memory/YYYY-MM-DD.md`): Log triage decisions, routing rationale, and escalations each heartbeat.
+- **Knowledge graph** (`life/`): Track entities you encounter repeatedly (issues with complex histories, recurring blockers, cross-persona dependencies).
+- **Recall**: Use `qmd query` to search past triage context before making routing decisions.
 
 ## Sub-Agent Dispatch
 
