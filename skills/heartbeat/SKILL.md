@@ -29,11 +29,12 @@ Execute the WoterClip heartbeat cycle: pick up assigned Linear issues, resolve t
 
 Check quiet hours: if `quiet_hours.enabled` and current time is within the quiet window:
 - `behavior: "skip"` → delete lockfile and exit with message: "Quiet hours active. Skipping."
-- `behavior: "triage-only"` → proceed but only load Orchestrator persona (skip worker personas in step 3).
+- `behavior: "triage-only"` → proceed but only load Orchestrator persona (skip worker personas in Step 4 and Step 8).
 
 ## Step 2: Check Inbox
 
 1. Call `mcp__claude_ai_Linear__list_issues` to fetch issues in the project, excluding Done, Canceled, and Duplicate states.
+   - If `list_issues` fails (network error, Linear API outage): delete lockfile and exit with error: "Linear API unavailable. Will retry next heartbeat."
 2. Filter client-side:
    - **Keep** only issues with status "In Progress" or "Todo"
    - **Skip** issues that have an assignee (claimed by another agent or human) — except issues the orchestrator itself claimed in a previous heartbeat (assignee is "me" and status is "In Progress")
@@ -80,7 +81,7 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 - If a required tool prefix has **no matching tools** available → stop work on this issue immediately
   - Post a blocked comment naming the missing tool
   - Move issue to "Blocked" state via `mcp__claude_ai_Linear__save_issue`
-  - Proceed to step 11 (next cycle)
+  - Proceed to the next issue in the queue
 
 ## Step 6: Claim Issue
 
@@ -88,6 +89,7 @@ Read `required_tools` from persona config. For each entry, verify the tool prefi
 
 1. Call `mcp__claude_ai_Linear__get_issue` to read the issue's current state.
 2. **Check assignee**: if the issue already has an assignee, **STOP — do not work this issue.** Another agent or human has claimed it. Proceed to the next issue.
+   > Note: This check is a race-condition guard. Step 2 already filters assigned issues, but another agent may have claimed the issue between Step 2 and Step 6. Always re-check here.
 3. **Claim**: call `mcp__claude_ai_Linear__save_issue` with `assignee: "me"` to lock the issue. This MUST happen before any other work on the issue.
 4. If the issue is "Todo", also transition to "In Progress" in the same `save_issue` call.
 5. If the issue is already "In Progress" (resuming interrupted work), just set assignee without state change.
@@ -132,11 +134,11 @@ After all sub-agents return:
 
 Note: Individual issue comments and state transitions are handled by sub-agents in Step 8. The orchestrator does not post per-issue comments.
 
-## Step 10: Update State
+## Step 10: Finalize
 
-Issue state transitions are handled by sub-agents during Step 8. The orchestrator does not update individual issue states after dispatch.
-
-If the orchestrator performed triage actions (labeling, decomposing) before dispatch, those state updates happen in Step 8 as part of triage — not here.
+1. Verify all assignee releases from Step 9 succeeded.
+2. If any `save_issue` calls failed during assignee release, retry once. If still failing, log the issue ID for manual cleanup.
+3. If the orchestrator performed triage actions (labeling, decomposing) before dispatch, those state updates already happened during Step 8 triage — no additional updates needed here.
 
 ## Step 11: Next Cycle or Exit
 

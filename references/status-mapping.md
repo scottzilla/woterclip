@@ -31,7 +31,7 @@ All state transitions use `mcp__claude_ai_Linear__save_issue` with the target st
 
 ## Inbox Query
 
-The heartbeat fetches all issues assigned to "me" (resolved dynamically by Linear MCP), then filters client-side:
+The heartbeat fetches all issues in the configured project (from `config.yaml` → `linear.project`), excluding terminal states (Done, Canceled, Duplicate), then filters client-side:
 
 ### Sort Order
 

@@ -50,13 +50,12 @@ All relation arrays are **append-only** — existing relations are never removed
 1. `save_comment` – describe blocker, @-mention {{BOARD_USER}}
 2. `save_issue` – move to Blocked state
 
-## Memory (para-memory-files skill)
+## Memory
 
-Use the `para-memory-files` skill for persistent memory across sessions. Your `$AGENT_HOME` is `.woterclip/personas/orchestrator/`.
+Use Claude Code's built-in memory for persistent context across sessions. Store memories relevant to triage patterns, routing decisions, and recurring issues.
 
-- **Daily notes** (`memory/YYYY-MM-DD.md`): Log triage decisions, routing rationale, and escalations each heartbeat.
-- **Knowledge graph** (`life/`): Track entities you encounter repeatedly (issues with complex histories, recurring blockers, cross-persona dependencies).
-- **Recall**: Use `qmd query` to search past triage context before making routing decisions.
+- Before routing: check memory for past routing decisions on similar issues.
+- After triage: save non-obvious routing rationale that would help future heartbeats.
 
 ## Sub-Agent Dispatch
 

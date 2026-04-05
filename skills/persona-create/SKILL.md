@@ -61,7 +61,7 @@ required_tools:
 
 runtime:
   model: <model>
-  thinking_effort: <high for opus, medium for sonnet/haiku>
+  thinking_effort: <high for opus, medium for sonnet, low for haiku>
   max_turns: <300 for opus, 200 for sonnet, 100 for haiku>
   enable_chrome: false
   timeout: 0
@@ -83,9 +83,20 @@ Read `.woterclip/config.yaml` and add the new persona to the `personas` map:
   label: "<label>"
 ```
 
+> Only the Orchestrator should have `is_default: true`. Omit this field for all other personas.
+
 ### Step 7: Create Linear Label
 
 Call `mcp__claude_ai_Linear__list_issue_labels` to check if the label exists. If not, create it under the WoterClip group via `mcp__claude_ai_Linear__create_issue_label`.
+
+### Error Handling
+
+| Error | Response |
+|-------|----------|
+| `.woterclip/config.yaml` missing | Stop. Instruct user to run `/woterclip-init` first. |
+| Label already exists in Linear | Skip label creation, continue with file creation. |
+| Persona directory already exists | Ask user: overwrite or cancel. Default to cancel. |
+| Another persona has `is_default: true` | Warn user that only one persona should be default. Set new persona's `is_default` to false (omit field). |
 
 ### Step 8: Summary
 

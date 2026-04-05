@@ -50,14 +50,14 @@ Ask the user:
 2. From `HEARTBEAT.md`: extract the role-specific section (usually the bottom half, after the generic heartbeat steps). Append as a "## Working Style" or "## Role Responsibilities" section
 3. From `AGENTS.md`: extract safety rules and boundaries. Append to the "## Boundaries" section
 4. Add a WoterClip-specific "## Quality Checklist" section if not present
-5. Drop any Paperclip-specific references (workspace paths, PARA memory, budget tracking)
+5. Drop any Paperclip-specific references (workspace paths, budget tracking, approval workflows)
 
 ### Step 4: Transform TOOLS.md
 
 1. Start with the Paperclip `TOOLS.md` content
 2. Replace Paperclip API references:
    - `paperclip` skill → `mcp__claude_ai_Linear__*` (Linear MCP tools)
-   - `para-memory-files` → drop (replaced by Claude Code built-in memory)
+   - `para-memory-files` / `qmd query` → replace with Claude Code built-in memory references (see existing persona TOOLS.md templates for the Memory section format)
    - Paperclip API calls (`POST /checkout`, `PATCH /api/issues`) → Linear MCP equivalents
 3. Add a "## Required" section listing `mcp__claude_ai_Linear` and any other tool prefixes
 4. If AGENTS.md references playbooks, note them for manual migration
@@ -112,8 +112,8 @@ What was imported:
 
 What was NOT imported:
   ✗ Budget tracking (no WoterClip equivalent)
-  ✗ PARA memory (replaced by Claude Code built-in memory)
   ✗ Approval workflows (not in v1)
+  ℹ PARA memory → converted to Claude Code built-in memory
 
 Review SOUL.md and customize for this project's specific needs.
 ```

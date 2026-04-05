@@ -20,7 +20,8 @@ For each persona in the `personas` config map:
 
 1. Read `config.yaml` from the persona's path (`.woterclip/<persona.path>/config.yaml`)
 2. Check if `SOUL.md` and `TOOLS.md` exist
-3. Collect: name, role, label, model, thinking effort, max turns, escalates_to, required tools
+3. If the persona directory does not exist at all, mark as `✗ MISSING` in the output
+4. Collect: name, role, label, model, thinking effort, max turns, escalates_to, required tools
 
 ### Step 3: Format Output
 
@@ -44,5 +45,7 @@ Flag missing files with `✗` so the user knows what needs attention.
 
 ### Step 4: Suggest Actions
 
-- If any persona has missing files, suggest fixing them
+- If any persona has missing files → suggest `/persona-create` to recreate, or `/woterclip-init` with merge mode to restore from templates
+- If a persona is in config but has no directory → suggest removing it from `config.yaml` or creating the directory via `/persona-create`
 - Mention `/persona-create` for adding new personas
+- Mention `/persona-import` for importing from Paperclip

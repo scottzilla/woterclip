@@ -50,14 +50,12 @@ All relation arrays are **append-only** — existing relations are never removed
 3. `save_comment` – post coordination notes on each relevant issue
 4. `save_issue` – update priorities to reflect sequencing decisions
 
-## Memory (para-memory-files skill)
+## Memory
 
-Use the `para-memory-files` skill for persistent memory across sessions. Your `$AGENT_HOME` is `.woterclip/personas/ceo/`.
+Use Claude Code's built-in memory for persistent context across sessions. Store memories relevant to strategic decisions, priority changes, and stakeholder preferences.
 
-- **Daily notes** (`memory/YYYY-MM-DD.md`): Log strategic decisions, priority changes, and scope calls each heartbeat.
-- **Knowledge graph** (`life/`): Track projects (active goals/milestones), areas (team dynamics, stakeholder context), and resources (market research, competitive intel).
-- **Tacit knowledge** (`MEMORY.md`): Record operating patterns — what decision frameworks work, how the Board prefers updates.
-- **Recall**: Use `qmd query` to search past decisions before making new scope or priority calls.
+- Before deciding: check memory for past decisions on similar scope/priority questions.
+- After deciding: save the decision rationale, especially for one-way doors or precedent-setting calls.
 
 ## Not Used
 

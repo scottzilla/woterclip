@@ -5,6 +5,8 @@
 **Author:** Alex Kim + Claude
 **Linear:** [WOT-79](https://linear.app/wotai/issue/WOT-79/design-woterclip-agent-orchestration-system)
 
+> **Note:** This spec was the original design document. The implementation has evolved — see `CLAUDE.md` for current architecture overview. Key changes: assignee-based locking (replaces label-based), Orchestrator as default persona (not CEO), Claude Code built-in memory (replaces PARA).
+
 ## Overview
 
 WoterClip is a Claude Code plugin that provides Linear-backed agent orchestration with persona-based task routing. It replaces Paperclip's agent system by using Linear as the task store and Claude Code's `/schedule` as the heartbeat runner.
@@ -19,8 +21,8 @@ WoterClip is a Claude Code plugin that provides Linear-backed agent orchestratio
 | Persona storage | Separate directory per persona (SOUL.md, TOOLS.md, config.yaml) | Matches proven Paperclip pattern; rich enough for identity + tools |
 | Issue → persona matching | Linear labels | Simple, visible in Linear UI, no custom fields needed |
 | Issue assignment | Board user's account + persona labels as signal | No fake bot accounts; agent picks up your issues that have persona labels |
-| Checkout locking | `agent-working` Linear label | Keeps agent state separate from workflow status |
-| Blocked state | `agent-blocked` label + comment + @-mention Board | Clear escalation path; dedup prevents repeated blocked comments |
+| Checkout locking | Assignee-based (`save_issue` with `assignee: "me"`) | Visible in Linear UI; no extra labels needed; released with `assignee: null` |
+| Blocked state | Comment + @-mention Board + issue state → Blocked | Clear escalation path; dedup prevents repeated blocked comments |
 | Communication | Structured comment on every heartbeat | Full audit trail with commits, duration, sub-issues, carry-forward |
 | Hierarchy | Board (human) → CEO persona → worker personas | CEO orchestrates, workers execute, Board decides |
 | Escalation | Comment + @-mention Board user | CEO escalates to Board; workers escalate to CEO |
@@ -94,32 +96,32 @@ The core loop that runs on every `/schedule` trigger or manual `/heartbeat` invo
 
 1. **Load Config** — Read `.woterclip/config.yaml`. Verify Linear MCP is available. Check for lockfile (`.woterclip/.heartbeat-lock`). If lockfile exists and is less than `stale_lock_hours` old, skip this heartbeat ("previous heartbeat still active"). If stale, delete lockfile and proceed. Create lockfile with current timestamp. Delete lockfile on exit (including error paths).
 
-2. **Check Inbox** — Query Linear via `mcp__claude_ai_Linear__list_issues` with `assignee: "me"`. The Linear MCP only accepts a single `state` filter, so fetch all issues for the assignee (no state filter), then filter and sort client-side. Sort by status (in_progress > todo), then by Linear priority (critical > low). Skip issues without a persona label. Skip `agent-blocked` issues unless new comments exist since last agent comment. Detect stale `agent-working` labels (older than `stale_lock_hours`) by checking comment timestamps — clean up stale lock, post a comment about it.
+2. **Check Inbox** — Query Linear via `mcp__claude_ai_Linear__list_issues` with `assignee: "me"`. The Linear MCP only accepts a single `state` filter, so fetch all issues for the assignee (no state filter), then filter and sort client-side. Sort by status (in_progress > todo), then by Linear priority (critical > low). Skip issues without a persona label. Skip issues in Blocked state unless new comments exist since last agent comment.
 
 3. **Pick Issue** — First in_progress with persona label, then first todo. Respect `max_issues_per_heartbeat` limit. If `--dry-run`, report what would be picked and exit. If `--persona <name>`, only pick issues matching that persona's label. No matches → exit heartbeat.
 
-4. **Resolve Persona** — Match issue label → persona directory via config. No persona label → load CEO persona. Load SOUL.md and TOOLS.md into context. Apply runtime config (model, thinking effort, max turns) from persona's config.yaml.
+4. **Resolve Persona** — Match issue label → persona directory via config. No persona label → load the default persona (Orchestrator, `is_default: true`). Load SOUL.md and TOOLS.md into context. Apply runtime config (model, thinking effort, max turns) from persona's config.yaml.
 
 5. **Validate Tools** — Check persona's `required_tools` are available. The `required_tools` field uses **prefix matching** — `mcp__claude_ai_Linear` matches any `mcp__claude_ai_Linear__*` tool. Missing tool prefix → block immediately with specific error message.
 
-6. **Lock** — Read the issue's current labels via `mcp__claude_ai_Linear__get_issue`. Append `agent-working` to the existing labels array. Save via `mcp__claude_ai_Linear__save_issue` with the full label set. If `agent-working` is already present (same agent, previous beat), proceed without re-saving. **Note:** Label updates are a read-modify-write cycle. This is acceptable because WoterClip runs as a single instance per repo — no concurrent writers.
+6. **Lock** — Claim the issue by calling `mcp__claude_ai_Linear__save_issue` with `assignee: "me"`. If the issue already has an assignee that is not the current user, it is claimed by another agent — skip this issue. The `.heartbeat-lock` file (step 1) prevents concurrent heartbeats on the same machine; the assignee field guards against multiple machines.
 
 7. **Understand Context** — Read issue title, description, comments. Read parent issue if exists. Check for new comments since last heartbeat. Parse the heartbeat counter from the last WoterClip comment (look for `Heartbeat #N` pattern). If no previous comment, start at #1.
 
-8. **Do Work** — Follow persona instructions (SOUL.md). Use repo tools. For large scope: create Linear sub-issues via `mcp__claude_ai_Linear__save_issue` with `team` from repo config, `parentId` set to the current issue, and appropriate persona labels. For small scope: use internal Claude Code tasks. If Linear MCP becomes unavailable mid-work, stop work, leave `agent-working` label in place (will be cleaned as stale lock on next heartbeat), and exit with error log.
+8. **Do Work** — Follow persona instructions (SOUL.md). Use repo tools. For large scope: create Linear sub-issues via `mcp__claude_ai_Linear__save_issue` with `team` from repo config, `parentId` set to the current issue, and appropriate persona labels. For small scope: use internal Claude Code tasks. If Linear MCP becomes unavailable mid-work, stop work, leave the assignee claim in place (the lockfile will be treated as stale on the next heartbeat), and exit with error log.
 
 9. **Report** — Post structured comment on Linear issue via `mcp__claude_ai_Linear__save_comment`. Include heartbeat counter (incremented from step 7). Store heartbeat metadata to `.woterclip/heartbeat-log.jsonl` (timestamp, issue ID, persona, duration, status, heartbeat number) for `/woterclip-status --history`.
 
-10. **Update State** — Read the issue's current labels, then modify:
-    - **Done** → remove `agent-working` from labels array, save. Update issue state to the appropriate Linear status.
-    - **Blocked** → remove `agent-working`, add `agent-blocked` to labels array, save. Post comment with blocker details. Include Board user's Linear display name in comment text (e.g., "**@Alex Kim** — please review"). Note: Linear comment @-mentions use display names in markdown; Linear may or may not trigger notifications for plain text mentions. For guaranteed notification, also consider assigning the issue back to the Board user or changing issue state.
-    - **More work needed** → keep `agent-working`, comment with progress.
+10. **Update State** — Update the issue via `save_issue`:
+    - **Done** → set issue state to Done; release assignee with `assignee: null`.
+    - **Blocked** → set issue state to Blocked; release assignee with `assignee: null`. Post comment with blocker details and Board user's Linear display name (e.g., "**@Alex Kim** — please review").
+    - **More work needed** → leave assignee as-is, comment with progress.
 
 11. **Next Issue or Exit** — If under `max_issues_per_heartbeat`, go to step 2. Otherwise delete lockfile and exit.
 
 ### Blocked-Task Dedup
 
-Before working an `agent-blocked` issue, read its comment thread. If the agent's last comment was a blocked update AND no new comments from humans exist since, skip the issue entirely. Only re-engage when new context appears.
+Before working a Blocked-state issue, read its comment thread. If the agent's last comment was a blocked update AND no new comments from humans exist since, skip the issue entirely. Only re-engage when new context appears.
 
 ### Heartbeat Counter Persistence
 
@@ -133,11 +135,11 @@ A lockfile at `.woterclip/.heartbeat-lock` prevents concurrent heartbeats. Creat
 
 | Paperclip | WoterClip |
 |-----------|-----------|
-| `POST /checkout` API | `agent-working` Linear label |
+| `POST /checkout` API | `save_issue` with `assignee: "me"` |
 | `GET /api/agents/me` | Read config.yaml + persona files |
 | `PATCH /api/issues/:id` | Linear MCP `save_issue` |
 | `POST /api/issues/:id/comments` | Linear MCP `save_comment` |
-| `409 Conflict` on checkout | Check if `agent-working` label present |
+| `409 Conflict` on checkout | Check if issue assignee is already set to another user |
 | Budget tracking via API | No budget tracking (relies on /schedule limits) |
 | Chain of command from API | Defined in persona config (escalates_to field) |
 | Separate agent processes | Single Claude instance, persona switching |
@@ -219,8 +221,12 @@ You are the Backend Engineer...
 The CEO never writes code. It triages, decomposes, coordinates, and escalates.
 
 - `escalates_to: board` (special value — @-mentions the Board user)
-- `label: null` with `is_default: true` (fallback when no persona label matches)
+- Has its own `label: ceo` for issues explicitly assigned to CEO
 - SOUL.md focuses on strategic posture, triage decisions, decomposition rules
+
+### Orchestrator Persona (Default)
+
+The Orchestrator is the default persona (`is_default: true`). It handles mechanical triage and routing for unlabeled issues — applying the correct persona label and handing off. Unlike CEO, it does not make strategic decisions; it escalates those to CEO.
 
 ## 4. Config & Initialization
 
@@ -250,16 +256,14 @@ heartbeat:
     max_consecutive_failures: 3
     backoff_multiplier: 2
 
-labels:
-  group: "WoterClip"             # Parent label group in Linear (auto-created by init)
-  working: "agent-working"
-  blocked: "agent-blocked"
-
 personas:
+  orchestrator:
+    path: "personas/orchestrator"
+    label: null
+    is_default: true             # Default: handles unlabeled issues (routing/triage)
   ceo:
     path: "personas/ceo"
-    label: null
-    is_default: true
+    label: "ceo"
   backend:
     path: "personas/backend"
     label: "backend"
@@ -289,7 +293,7 @@ When `behavior: "triage-only"`, the heartbeat runs CEO persona only:
 2. Fetch Linear user info → auto-fill `user_id` and `user_name`
 3. Fetch Linear teams → let user pick team
 4. Ask which personas to scaffold (presets: "engineering", "marketing", "custom")
-5. Create "WoterClip" label group in Linear, then create `agent-working` and `agent-blocked` as child labels, plus persona labels (e.g., `backend`, `frontend`)
+5. Create "WoterClip" label group in Linear, then create persona labels (e.g., `backend`, `frontend`, `ceo`) as child labels
 6. Write `config.yaml` and persona directories with templates
 7. Offer to set up recurring heartbeat schedule
 8. Print summary of what was created
@@ -520,9 +524,9 @@ This powers `/woterclip-status --history`. The file is append-only and can be sa
 
 `.woterclip/.heartbeat-lock` contains the timestamp when the current heartbeat started. Auto-deleted on exit. Stale locks (older than `stale_lock_hours`) are auto-cleaned.
 
-### Label State
+### Issue Assignment State
 
-All agent state labels (`agent-working`, `agent-blocked`) live in Linear. No local label state is cached.
+Locking state is tracked via the Linear assignee field — set to `"me"` when claimed, `null` when released. No local state is cached beyond the lockfile.
 
 ## 11. Future Work (Intentionally Omitted from v1)
 
@@ -540,7 +544,7 @@ All agent state labels (`agent-working`, `agent-blocked`) live in Linear. No loc
 | Task store | Paperclip API | Linear |
 | Heartbeat runner | Paperclip scheduler | Claude Code `/schedule` |
 | Agent identity | API records | Per-repo persona files (SOUL.md, TOOLS.md, config.yaml) |
-| Checkout locking | `POST /checkout` + 409 | `agent-working` label (read-modify-write) |
+| Checkout locking | `POST /checkout` + 409 | `save_issue` with `assignee: "me"`; conflict = assignee already set |
 | Chain of command | API-driven hierarchy | `escalates_to` in persona config |
 | Escalation notifications | API-driven | Comment mention + optional issue reassignment |
 | Memory | Custom PARA system | Claude Code built-in memory |

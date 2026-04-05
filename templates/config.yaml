@@ -5,6 +5,7 @@ version: 1
 # Linear workspace settings
 linear:
   user_name: "{{USER_NAME}}"         # Board user's display name (used in @-mentions)
+  board_user: "{{BOARD_USER}}"       # Board member to @-mention for escalations (often same as user_name)
   team: "{{TEAM}}"                   # Default team for new issues/sub-issues
   project: null                      # Optional: scope inbox to a specific project
 

@@ -42,14 +42,12 @@ Use `save_issue` to link issues discovered during implementation:
 
 All relation arrays are **append-only** — existing relations are never removed unless you use the explicit remove fields.
 
-## Memory (para-memory-files skill)
+## Memory
 
-Use the `para-memory-files` skill for persistent memory across sessions. Your `$AGENT_HOME` is `.woterclip/personas/frontend/`.
+Use Claude Code's built-in memory for persistent context across sessions. Store memories relevant to component patterns, styling gotchas, and responsive edge cases.
 
-- **Daily notes** (`memory/YYYY-MM-DD.md`): Log what you worked on, blockers hit, and commits made each heartbeat.
-- **Knowledge graph** (`life/`): Track projects (active UI work), areas (component patterns, design system usage), and resources (UI framework docs, accessibility references).
-- **Tacit knowledge** (`MEMORY.md`): Record learned patterns — component approaches that worked, styling gotchas, responsive edge cases.
-- **Recall**: Use `qmd query` to search past work before starting new tasks.
+- Before starting: check memory for past work on related components.
+- After completing: save non-obvious findings — approaches that worked, visual pitfalls, accessibility issues.
 
 ## Optional Tools
 
