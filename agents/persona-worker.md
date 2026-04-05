@@ -58,12 +58,20 @@ You can delegate work to other personas by creating or reassigning Linear issues
 
 Use the persona roster from `.woterclip/config.yaml` to pick the right target. Don't guess — check the roster.
 
+## Commit
+
+> **REQUIRED: You MUST commit all changes before reporting. Uncommitted work is invisible to the team and will be lost.**
+
+1. Stage and commit all code changes AND any `.woterclip/` changes (TOOLS.md, MEMORY.md, config.yaml, memory files, etc.) in the same commit or as separate atomic commits.
+2. Use clear commit messages referencing the issue ID (e.g., `feat(data): add IBKR rate limit handling (TRAA-42)`).
+3. Note the short commit hashes — you will include them in your Linear comment.
+
 ## Report
 
 After completing work (or hitting budget), post a structured comment on the Linear issue:
 
 1. Parse heartbeat counter from existing comments (find last `Heartbeat #N`, increment).
-2. Post comment following `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md`.
+2. Post comment following `${CLAUDE_PLUGIN_ROOT}/references/comment-format.md`. **Include commit short hashes** in the "What was done" section (e.g., `a1b2c3d`).
 3. Update issue state per `${CLAUDE_PLUGIN_ROOT}/references/status-mapping.md`.
 
 ## Return
@@ -71,7 +79,7 @@ After completing work (or hitting budget), post a structured comment on the Line
 Return a summary to the orchestrator containing:
 - Issue ID and title
 - Final state (Done, In Review, Blocked, In Progress, Reassigned)
-- Commits made (if any)
+- Commit short hashes (if any)
 - Sub-issues created (if any)
 - Escalation flag (if blocked or needs Board attention)
 
