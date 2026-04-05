@@ -43,12 +43,14 @@ Use `save_issue` to link issues discovered during implementation:
 
 All relation arrays are **append-only** — existing relations are never removed unless you use the explicit remove fields.
 
-## Memory
+## Memory (para-memory-files skill)
 
-Use Claude Code's built-in memory for persistent context across sessions. Store memories relevant to implementation patterns, integration gotchas, and API quirks.
+Use the `para-memory-files` skill for persistent memory across sessions. Your `$AGENT_HOME` is `.woterclip/personas/backend/`.
 
-- Before starting: check memory for past work on related code areas.
-- After completing: save non-obvious findings — what worked, what failed, integration surprises.
+- **Daily notes** (`memory/YYYY-MM-DD.md`): Log what you worked on, blockers hit, and commits made each heartbeat.
+- **Knowledge graph** (`life/`): Track projects (active implementation work), areas (API quirks, data patterns), and resources (API docs findings, dependency notes).
+- **Tacit knowledge** (`MEMORY.md`): Record learned patterns — what approaches worked/failed, integration gotchas.
+- **Recall**: Use `qmd query` to search past work before starting new tasks. Avoid rediscovering known issues.
 
 ## Optional Tools
 

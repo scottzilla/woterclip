@@ -36,7 +36,7 @@ Execute work on a single Linear issue as a WoterClip persona.
 
 ## Memory
 
-If your TOOLS.md describes a memory system:
+If your TOOLS.md describes a memory system (e.g., `para-memory-files` skill):
 
 1. **Before starting work:** Check your memory at `$AGENT_HOME/memory/` for relevant context — past decisions, known issues, domain knowledge that applies to this issue.
 2. **After completing work:** Write what you learned to memory — decisions made, patterns discovered, context that would help future work on related issues. Keep entries atomic and specific.
