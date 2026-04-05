@@ -19,7 +19,7 @@ Read `.woterclip/config.yaml`. If missing, report that WoterClip is not initiali
 
 ### Step 2: Check Schedule
 
-Report whether a recurring heartbeat is active. Check if `/schedule` is running `/heartbeat` by noting this is informational — the user knows their schedule state.
+Report schedule status as "unknown" — schedule state is not programmatically queryable from within Claude Code. The user manages their own `/schedule` configuration.
 
 ### Step 3: Last Heartbeat
 
@@ -32,7 +32,7 @@ If no log file exists, report "No heartbeat history found."
 
 ### Step 4: Current Issues
 
-Call `mcp__claude_ai_Linear__list_issues` with `assignee: "me"`. Filter and categorize by Linear state:
+Call `mcp__claude_ai_Linear__list_issues` to fetch issues in the configured project (from `config.yaml` → `linear.project`), excluding terminal states. Filter and categorize by Linear state:
 
 **Since last heartbeat** (issues that changed since the last logged heartbeat timestamp):
 - `✓` Done issues (completed)
@@ -68,6 +68,15 @@ Queue (next heartbeat):
 Blocked (needs Board):
   WOT-XX  @User — blocker summary
 ```
+
+## Error Handling
+
+| Error | Response |
+|-------|----------|
+| `.woterclip/config.yaml` missing | Report WoterClip not initialized, suggest `/woterclip-init`. |
+| Linear MCP unavailable | Report error, show only local data (config + log). |
+| `heartbeat-log.jsonl` malformed | Skip malformed lines with warning, show what's parseable. |
+| `heartbeat-log.jsonl` missing | Show "No heartbeat history found" for log-dependent sections. |
 
 ## History Mode
 

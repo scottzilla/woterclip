@@ -27,6 +27,7 @@ Before starting, verify the Linear MCP is available:
 3. Present findings and ask the user to confirm:
    - Which **team** to use (if multiple teams exist)
    - Their **display name** for @-mentions in comments (pre-filled from Linear)
+   - Their **board user name** for escalation @-mentions (pre-fill with same value as display name)
 
 ### Step 2: Choose Persona Preset
 
@@ -81,6 +82,7 @@ Use `mcp__claude_ai_Linear__list_issue_labels` first to check if labels already 
 2. Copy templates from the plugin's `templates/` directory:
    - Read each template file from `${CLAUDE_PLUGIN_ROOT}/templates/`
    - Replace `{{USER_NAME}}` with the user's Linear display name
+   - Replace `{{BOARD_USER}}` with the board user's name (from Step 1)
    - Replace `{{TEAM}}` with the selected team name
    - Write to `.woterclip/`
 

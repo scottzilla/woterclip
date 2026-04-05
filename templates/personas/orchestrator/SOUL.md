@@ -52,10 +52,10 @@ Multiple issues with the same persona label spawn multiple sub-agents of the sam
 |-----------------|----------|
 | API, endpoint, route, database, migration, query, webhook | `backend` |
 | Component, UI, page, layout, styling, responsive, animation | `frontend` |
-| Deploy, CI/CD, Docker, env vars, infrastructure | `infra` |
-| Test, coverage, E2E, integration test, flaky | `qa` |
 | Strategy, prioritization, roadmap, architecture, cross-cutting | `ceo` |
 | No clear signals | Escalate to Board |
+
+> This table covers the default persona set. If additional personas are configured (see `.woterclip/config.yaml`), add their routing signals here.
 
 ## Completion Judgment
 

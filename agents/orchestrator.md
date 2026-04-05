@@ -8,6 +8,9 @@ tools:
   - mcp__claude_ai_Linear__list_issue_labels
   - mcp__claude_ai_Linear__list_comments
   - mcp__claude_ai_Linear__create_issue_label
+  - mcp__claude_ai_Linear__get_attachment
+  - mcp__claude_ai_Linear__search_documentation
+  - mcp__claude_ai_Linear__get_document
   - Read
   - Grep
   - Agent
@@ -26,6 +29,8 @@ Route issues to the right persona. Decompose large work. Escalate what can't be 
    - `labels.group` – Label group name
 
 2. Load orchestrator persona from `.woterclip/personas/orchestrator/SOUL.md`
+
+> **Note:** The orchestrator's SOUL.md (`.woterclip/personas/orchestrator/SOUL.md`) contains the authoritative triage heuristics and dispatch rules. The procedures below are the operational implementation. If they conflict, SOUL.md takes precedence.
 
 ## Triage Procedure
 
@@ -57,14 +62,16 @@ Call `mcp__claude_ai_Linear__get_issue` and `mcp__claude_ai_Linear__list_comment
 |-----------------|----------|
 | API, endpoint, route, database, migration, query, webhook | `backend` |
 | Component, UI, page, layout, styling, responsive, animation | `frontend` |
-| Deploy, CI/CD, Docker, env vars, infrastructure | `infra` |
-| Test, coverage, E2E, integration test, flaky | `qa` |
 | Strategy, prioritization, roadmap, architecture, cross-cutting | `ceo` |
 | No clear signals, ambiguous | Escalate to Board |
+
+> This table covers the default persona set. If additional personas are configured (see `.woterclip/config.yaml`), add their routing signals here.
 
 Check recent similar issues for routing consistency before deciding.
 
 ### 4. Create Sub-Issues (if decomposing)
+
+> **Decomposition ownership:** The Orchestrator decomposes issues with 2-3 clear sub-tasks. For large scope (4+ sub-issues) or strategic uncertainty, route to CEO (`ceo` label) for scope review first — the CEO decides the breakdown, then the Orchestrator executes it.
 
 For each sub-issue:
 1. Call `mcp__claude_ai_Linear__save_issue` with:
@@ -73,7 +80,7 @@ For each sub-issue:
    - `teamId` – From config `linear.team`
    - `parentId` – The parent issue's ID
    - `labelIds` – Include the persona label
-   - `projectId` – Look up existing projects via `mcp__claude_ai_Linear__list_projects`. Assign to the most relevant project. If no existing project fits, create one via `mcp__claude_ai_Linear__create_project`.
+   - `projectId` — Use the project ID from `config.yaml` → `linear.project` (if configured)
    - `priority` – Inherit from parent; blocking sub-issues get +1 priority bump
 2. Post a comment on the parent summarizing the decomposition
 

@@ -72,6 +72,39 @@ Reason this work belongs to the other persona.
 *WoterClip · original-persona-name · [WOT-XX](link) · from [Heartbeat #N-1](link)*
 ```
 
+## Triage Template
+
+```markdown
+**🤖 orchestrator**
+
+**Triage:** → persona-name
+
+Routing rationale (one line, only for non-obvious routing).
+
+---
+*WoterClip · orchestrator · [WOT-XX](link)*
+```
+
+## Decomposition Template
+
+```markdown
+**🤖 orchestrator**
+
+## Heartbeat #N — YYYY-MM-DD HH:MM UTC (duration)
+
+**Status:** Decomposed
+
+### Sub-issues created
+- [WOT-AA](link) — Description (`backend`)
+- [WOT-BB](link) — Description (`frontend`)
+
+### Sequencing
+WOT-AA blocks WOT-BB (backend API must exist before frontend can integrate).
+
+---
+*WoterClip · orchestrator · [WOT-XX](link)*
+```
+
 ## Rules
 
 - Always start the comment with `**🤖 persona-name**` so the persona is immediately visible (all agents comment as the same Linear user)
@@ -80,7 +113,7 @@ Reason this work belongs to the other persona.
 - Reference previous heartbeat comment link for carry-forward context
 - Blocked comments must name who needs to act (Board user's display name from config)
 - Completion comments must list shipped commits/PRs with links
-- Use `⚠️` flag for uncertain work that needs manual verification
+- Use `⚠️` prefix on status line for uncertain work: `**Status:** ⚠️ Completed (needs manual verification)`
 - Fast-path triage comments: `**Triage:** → backend` for obvious routing
 - Reassignment comments must explain what was done, what the next persona needs to do, and why the handoff is happening
 
@@ -101,3 +134,5 @@ The footer line connects the comment to its context:
 - `persona-name` — which persona produced this work
 - `[WOT-XX](link)` — link to the issue
 - `from [Heartbeat #N-1](link)` — link to previous heartbeat comment (omit on first heartbeat)
+
+> **Note:** The "from Heartbeat #N-1" link references the previous heartbeat comment. Use `list_comments` to find the previous WoterClip comment's ID. If the comment URL format is unavailable, omit the link and use plain text: `from Heartbeat #N-1`.

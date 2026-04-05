@@ -8,6 +8,9 @@ tools:
   - mcp__claude_ai_Linear__list_issue_labels
   - mcp__claude_ai_Linear__list_comments
   - mcp__claude_ai_Linear__create_issue_label
+  - mcp__claude_ai_Linear__get_attachment
+  - mcp__claude_ai_Linear__search_documentation
+  - mcp__claude_ai_Linear__get_document
   - Read
   - Write
   - Edit

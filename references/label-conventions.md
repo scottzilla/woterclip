@@ -16,10 +16,10 @@ Persona labels route issues to the right persona. Created by `/woterclip-init`.
 |-------|---------|-----------------|
 | `backend` | Backend Engineer | API, endpoint, route, database, migration, query, webhook |
 | `frontend` | Frontend Engineer | Component, UI, page, layout, styling, responsive, animation |
-| `infra` | Infra Engineer | Deploy, CI/CD, Docker, env vars, infrastructure |
-| `qa` | QA Engineer | Test, coverage, E2E, integration test, flaky |
 | `ceo` | CEO | Strategy, prioritization, roadmap, architecture, cross-cutting |
 | *(none)* | Orchestrator (default) | Unlabeled issues — routed by the Orchestrator |
+
+Additional persona labels can be added via `/persona-create` and will appear in `config.yaml`.
 
 ### Persona Label Rules
 
